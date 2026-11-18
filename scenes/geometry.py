@@ -7,7 +7,6 @@ from manim import (
     UP,
     WHITE,
     Arc,
-    Arrow,
     Circle,
     Create,
     DashedLine,
@@ -100,30 +99,6 @@ def chord_through(point, direction, center, radius: float) -> tuple:
     c = float(np.dot(f, f)) - radius**2
     half = np.sqrt(max(b * b - c, 0.0))
     return point + d * (-b + half), point + d * (-b - half)
-
-
-def mini_circle(baseline, radius: float, angles: list[float], label: str) -> VGroup:
-    center = baseline + UP * radius
-    ground = Line(
-        baseline + LEFT * (radius + 0.2),
-        baseline + RIGHT * (radius + 0.2),
-        color=WHITE,
-        stroke_width=2,
-    )
-    circle = Circle(radius=radius, color=WHITE, stroke_width=2).move_to(center)
-    stars = VGroup(
-        *[
-            star_at(
-                center
-                + RIGHT * radius * np.sin(angle)
-                + DOWN * radius * np.cos(angle),
-                radius=0.045,
-            )
-            for angle in angles
-        ]
-    )
-    caption = cn(label, 0.36).next_to(baseline, DOWN, buff=0.08)
-    return VGroup(ground, circle, stars, caption)
 
 
 class BaselGeometryLight(Scene):
@@ -421,116 +396,187 @@ class BaselGeometryDoubling(Scene):
 
 
 class BaselGeometryLimit(Scene):
-    """屏幕 4：半径与星数同步翻倍，圆趋于直线。"""
+    """屏幕 5：周长与灯数同步翻倍，圆在 P 附近趋于直线。"""
 
     def construct(self):
-        title = heading("翻倍与极限", "Doubling to a Line")
+        title = heading("极限：圆变成直线", "Circles Become a Line")
 
-        baseline_1 = LEFT * 5.5 + DOWN * 2.45
-        baseline_2 = LEFT * 3.55 + DOWN * 2.45
-        baseline_3 = LEFT * 1.55 + DOWN * 2.45
-        mini_1 = mini_circle(baseline_1, 0.48, [np.deg2rad(120)], "1 颗星")
-        mini_2 = mini_circle(
-            baseline_2, 0.58, [np.deg2rad(60), np.deg2rad(240)], "2 颗星"
-        )
-        mini_3 = mini_circle(
-            baseline_3,
-            0.68,
-            [np.deg2rad(30), np.deg2rad(120), np.deg2rad(210), np.deg2rad(300)],
-            "4 颗星",
-        )
-        mini_row = VGroup(mini_1, mini_2, mini_3)
-        doubling_note = cn("半径 ×2，星数 ×2；切点亮度不变", 0.46)
-        doubling_note.move_to(LEFT * 3.5 + UP * 1.35)
+        P = LEFT * 4.4 + DOWN * 3.2
+        r0 = 0.3
+        circles = VGroup()
+        lamp_groups = VGroup()
+        lamp_points: list = []
+        centers: list = []
+        for k in range(4):
+            radius = r0 * 2**k
+            center = P + UP * radius
+            centers.append(center)
+            circles.add(
+                Circle(radius=radius, color=WHITE, stroke_width=2.6).move_to(center)
+            )
+            points = []
+            for s in range(1, 2 ** (k + 1), 2):
+                theta = -np.pi / 2 + np.pi * s / 2**k
+                points.append(
+                    center + radius * np.array([np.cos(theta), np.sin(theta), 0.0])
+                )
+            lamp_points.append(points)
+            lamp_groups.add(VGroup(*[star_at(pt, radius=0.062) for pt in points]))
 
-        limit_arrow = Arrow(
-            LEFT * 0.55 + DOWN * 2.45,
-            RIGHT * 0.25 + DOWN * 2.45,
-            color=WHITE,
-            stroke_width=2.5,
-            buff=0,
-        )
+        chords = VGroup()
+        for k in range(3):
+            group = VGroup()
+            for point in lamp_points[k]:
+                direction = np.array([-(point - P)[1], (point - P)[0], 0.0])
+                a, b = chord_through(point, direction, centers[k + 1], r0 * 2 ** (k + 1))
+                group.add(
+                    Line(a, b, color=WHITE, stroke_width=1.6, stroke_opacity=0.55)
+                )
+            chords.add(group)
+
+        guide = DashedLine(P, P + UP * (16 * r0), stroke_width=1.4, stroke_opacity=0.45)
+        dot_P = Dot(P, radius=0.05, color=WHITE)
+        label_P = MathTex("P").scale(0.5).next_to(P, DOWN, buff=0.18)
+
+        note_1 = cn("初始：周长 2，灯在 P 的正对面", 0.44)
+        f_bright = MathTex(r"\frac{1}{d^2}=\frac{1}{(2/\pi)^2}=\frac{\pi^2}{4}").scale(0.62)
+        bright_row = VGroup(cn("总亮度：", 0.5), f_bright).arrange(RIGHT, buff=0.25)
+        column = VGroup(note_1, bright_row).arrange(DOWN, aligned_edge=LEFT, buff=0.26)
+        column.move_to(RIGHT * 3.3 + UP * 1.6)
+
+        f_limit = MathTex(
+            r"2\left(1+\frac{1}{9}+\frac{1}{25}+\cdots\right)=\frac{\pi^2}{4}"
+        ).scale(0.8)
+        f_limit.move_to(RIGHT * 3.3 + DOWN * 1.6)
+
+        line_center = RIGHT * 3.3 + DOWN * 0.1
+        unit = 0.42
         limit_line = Line(
-            RIGHT * 0.55 + DOWN * 2.45,
-            RIGHT * 2.45 + DOWN * 2.45,
+            line_center + LEFT * 3.5,
+            line_center + RIGHT * 3.5,
             color=WHITE,
             stroke_width=2,
         )
-        limit_ticks = VGroup(
+        dot_origin = Dot(line_center, radius=0.05, color=WHITE)
+        label_origin = MathTex("P").scale(0.5).next_to(dot_origin, UP, buff=0.16)
+        offsets = [-7, -5, -3, -1, 1, 3, 5, 7]
+        line_lamps = VGroup(
+            *[star_at(line_center + RIGHT * unit * v, radius=0.06) for v in offsets]
+        )
+        line_labels = VGroup(
             *[
-                Line(
-                    RIGHT * x + DOWN * 2.55,
-                    RIGHT * x + DOWN * 2.35,
-                    color=WHITE,
-                    stroke_width=2,
+                MathTex(str(v)).scale(0.42).next_to(
+                    line_center + RIGHT * unit * v, DOWN, buff=0.18
                 )
-                for x in [0.9, 1.3, 1.7, 2.1]
+                for v in offsets
             ]
         )
-        limit_label = cn("极限：半整数点", 0.36)
-        limit_label.next_to(limit_line, DOWN, buff=0.08)
-        limit_group = VGroup(limit_arrow, limit_line, limit_ticks, limit_label)
-
-        half_integer_sum = MathTex(
-            r"\sum_{m=-\infty}^{\infty}\frac{1}{\left(m+\frac12\right)^2}",
-            "=",
-            r"\pi^2",
-        ).scale(0.85)
-        half_integer_sum.move_to(RIGHT * 3.9 + UP * 0.9)
-        odd_sum = MathTex(
-            r"1+\frac{1}{9}+\frac{1}{25}+\cdots",
-            "=",
-            r"\frac{\pi^2}{8}",
-        ).scale(0.9)
-        odd_sum.move_to(RIGHT * 3.9 + DOWN * 0.35)
-        pair_note = cn("正负半整数配对", 0.44)
-        pair_note.next_to(odd_sum, DOWN, buff=0.3)
 
         self.play(Write(title[0]), FadeIn(title[1]), run_time=0.8)
-        self.play(FadeIn(mini_1), run_time=0.5)
-        self.wait(1.4)
-        self.play(FadeIn(mini_2), run_time=0.5)
-        self.wait(1.4)
-        self.play(FadeIn(mini_3), FadeIn(doubling_note), run_time=0.7)
-        self.wait(3.3)
-        self.play(Create(limit_group), run_time=0.7)
-        self.play(Write(half_integer_sum), run_time=0.9)
-        self.wait(2.8)
-        self.play(Write(odd_sum), FadeIn(pair_note), run_time=0.9)
-        self.wait(7.6)
+        self.play(
+            Create(guide),
+            Create(circles[0]),
+            FadeIn(dot_P),
+            FadeIn(label_P),
+            FadeIn(lamp_groups[0]),
+            run_time=1.4,
+        )
+        self.play(FadeIn(note_1, shift=UP), run_time=0.8)
+        self.play(FadeIn(bright_row[0]), Write(f_bright), run_time=1.0)
+        self.wait(4.0)
+
+        self.play(Create(circles[1]), run_time=0.8)
+        self.play(Create(chords[0]), run_time=0.7)
+        self.play(FadeIn(lamp_groups[1]), run_time=0.6)
+        self.wait(1.1)
+
+        self.play(
+            FadeOut(chords[0]),
+            Create(circles[2]),
+            run_time=0.9,
+        )
+        self.play(
+            LaggedStart(*[Create(chord) for chord in chords[1]], lag_ratio=0.3),
+            run_time=0.7,
+        )
+        self.play(FadeIn(lamp_groups[2]), run_time=0.6)
+
+        self.play(
+            FadeOut(chords[1]),
+            Create(circles[3]),
+            run_time=1.0,
+        )
+        self.play(
+            LaggedStart(*[Create(chord) for chord in chords[2]], lag_ratio=0.25),
+            run_time=0.9,
+        )
+        self.play(FadeIn(lamp_groups[3]), run_time=0.7)
+        self.wait(1.0)
+
+        self.play(
+            FadeOut(chords[2]),
+            *[circle.animate.set_stroke(opacity=0.22) for circle in circles],
+            *[lamps.animate.set_opacity(0.25) for lamps in lamp_groups],
+            guide.animate.set_opacity(0.18),
+            dot_P.animate.set_opacity(0.3),
+            run_time=0.9,
+        )
+        self.play(Create(limit_line), FadeIn(dot_origin), FadeIn(label_origin), run_time=1.2)
+        self.wait(2.2)
+        self.play(
+            LaggedStart(*[FadeIn(lamp) for lamp in line_lamps], lag_ratio=0.12),
+            run_time=2.0,
+        )
+        self.play(
+            LaggedStart(*[FadeIn(label) for label in line_labels], lag_ratio=0.1),
+            run_time=1.2,
+        )
+        self.wait(0.5)
+        self.play(Write(f_limit), run_time=1.6)
+        self.wait(0.7)
 
         everything = VGroup(
-            title, mini_row, doubling_note, limit_group, half_integer_sum, odd_sum, pair_note
+            title, circles, lamp_groups, guide, dot_P, label_P, column,
+            f_limit, limit_line, dot_origin, label_origin,
+            line_lamps, line_labels,
         )
         self.play(FadeOut(everything), run_time=0.5)
 
 
 class BaselGeometryResult(Scene):
-    """屏幕 5：偶数项与奇数项合并回 S。"""
+    """屏幕 6：奇数项与偶数项合并回 S。"""
 
     def construct(self):
         title = heading("回到巴塞尔问题", "Back to Basel")
 
-        line_1 = MathTex(r"S=1+\frac{1}{4}+\frac{1}{9}+\cdots").scale(0.85)
-        line_2 = cn("偶数项 = S/4，奇数项 = 3S/4", 0.55)
-        line_3 = MathTex(r"\frac{3S}{4}=\frac{\pi^2}{8}").scale(0.9)
-        line_4 = MathTex(
+        line_1 = MathTex(
+            r"2\left(1+\frac{1}{9}+\frac{1}{25}+\cdots\right)=\frac{\pi^2}{4}"
+        ).scale(0.8)
+        line_2 = MathTex(r"1+\frac{1}{9}+\frac{1}{25}+\cdots=\frac{\pi^2}{8}").scale(0.85)
+        line_3 = cn("偶数项 = S/4，奇数项 = 3S/4", 0.55)
+        line_4 = MathTex(r"\frac{3S}{4}=\frac{\pi^2}{8}").scale(0.9)
+        line_5 = MathTex(
             r"S=\frac{4}{3}\cdot\frac{\pi^2}{8}=\frac{\pi^2}{6}"
         ).scale(1.0)
-        algebra = VGroup(line_1, line_2, line_3, line_4).arrange(DOWN, buff=0.32)
-        algebra.move_to(DOWN * 0.25)
+        algebra = VGroup(line_1, line_2, line_3, line_4, line_5).arrange(
+            DOWN, buff=0.28
+        )
+        algebra.move_to(DOWN * 0.35)
 
         credit = cn("Johan Wästlund · 2010 · 3Blue1Brown", 0.38)
         credit.to_edge(DOWN, buff=0.35)
         credit.set_opacity(0.7)
 
         self.play(Write(title[0]), FadeIn(title[1]), run_time=0.8)
-        self.play(Write(line_1), run_time=0.7)
-        self.wait(0.8)
-        self.play(FadeIn(line_2, shift=UP), run_time=0.6)
-        self.wait(0.8)
-        self.play(Write(line_3), run_time=0.7)
+        self.play(Write(line_1), run_time=1.0)
+        self.wait(4.5)
+        self.play(Write(line_2), run_time=0.9)
+        self.wait(2.0)
+        self.play(FadeIn(line_3, shift=UP), run_time=0.8)
+        self.wait(2.2)
         self.play(Write(line_4), run_time=0.8)
+        self.wait(1.8)
+        self.play(Write(line_5), run_time=1.0)
         self.play(FadeIn(credit), run_time=0.5)
-        self.play(line_4.animate.set_color(ACCENT), run_time=1.0)
-        self.wait(3.0)
+        self.play(line_5.animate.set_color(ACCENT), run_time=0.9)
+        self.wait(1.5)

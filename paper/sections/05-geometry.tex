@@ -145,103 +145,70 @@ $P$ 点的总亮度不变。逐条推导见文献 \cite{wastlund}。
 \label{fig:doubling}
 \end{figure}
 
-\subsection{极限：趋于半整数点}
+\subsection{极限：圆变成直线}
 
-对大圆上的每盏灯再重复同样的操作，半径与灯数同步翻倍：第 $k$ 层圆的半径为
-$2^k r_1$、灯数为 $2^k$，且灯点保持等角间隔；$P$ 点的总亮度在每一步都不变。
+取周长为 $2$ 的圆（半径 $R_0=\frac{1}{\pi}$），唯一的灯放在 $P$ 的正对面，
+到 $P$ 的距离正好是整个直径 $\frac{2}{\pi}$，所以 $P$ 点的总亮度为
+\begin{equation}
+  \frac{1}{d^{2}}=\frac{1}{(2/\pi)^{2}}=\frac{\pi^{2}}{4}.
+  \label{eq:first-lamp}
+\end{equation}
 
-为了算出极限，设初始圆半径 $R_0=\frac{1}{2\pi}$，初始那盏灯对应的圆周角为
-$\varphi$。第 $k$ 层圆的半径为 $R_k=2^kR_0$。由圆的弦长公式，第 $m$ 盏灯到
-$P$ 的距离为
-\begin{equation}
-  d_{k,m}
-  =2R_k\left|\sin\left(\frac{\varphi+2\pi m}{2^{k+1}}\right)\right|.
-\end{equation}
-令 $k\to\infty$，利用 $\sin t\sim t$，得到
-\begin{equation}
-  d_{k,m}\longrightarrow
-  \left|\frac{R_k}{2^k}(\varphi+2\pi m)\right|
-  =\left|m+\frac{\varphi}{2\pi}\right|.
-\end{equation}
-另一方面，初始的一盏灯到 $P$ 的距离为 $2R_0\sin(\varphi/2)$，所以总亮度始终为
-\begin{equation}
-  f_0=\frac{1}{\left(2R_0\sin(\varphi/2)\right)^2}
-  =\frac{\pi^2}{\sin^2(\varphi/2)}.
-\end{equation}
-于是极限给出 Wästlund 恒等式
-\begin{equation}
-  \sum_{m=-\infty}^{\infty}\frac{1}{\left(m+x\right)^2}
-  =\frac{\pi^2}{\sin^2(\pi x)},
-  \qquad x=\frac{\varphi}{2\pi}.
-  \label{eq:wastlund-identity}
-\end{equation}
-令 $x\to\frac12$，右边等于 $\pi^2$，左边为
-\begin{equation}
-  \sum_{m=-\infty}^{\infty}\frac{1}{\left(m+\frac12\right)^2}
-  =2\sum_{k=0}^{\infty}\frac{1}{\left(k+\frac12\right)^2}
-  =8\sum_{k=0}^{\infty}\frac{1}{(2k+1)^2}.
-\end{equation}
-因此所有正奇数平方的倒数之和为
-\begin{equation}
-  1+\frac{1}{9}+\frac{1}{25}+\cdots=\frac{\pi^2}{8}.
-  \label{eq:odd}
-\end{equation}
-（严格地说，$x=\frac12$ 时第一次替换会把一盏灯送到切点，出现退化；可取
-$x\to\frac12$ 的极限。式 \eqref{eq:wastlund-identity} 两边在 $x=\frac12$
-附近都连续，因此结论仍然成立。）
-
-\begin{figure}[htbp]
+\begin{figure}[H]
 \centering
 \begin{tikzpicture}[scale=0.78, every node/.style={font=\small}]
-  \begin{scope}
-    \draw[thick] (-1.05,0)--(1.05,0);
-    \draw[thick] (0,0.8) circle (0.8);
-    \fill ($(0,0.8)+(120:0.8)$) circle (3pt);
-    \node[below] at (0,-0.08) {$1$ 盏灯};
-  \end{scope}
-
-  \begin{scope}[shift={(3.2,0)}]
-    \draw[thick] (-1.25,0)--(1.25,0);
-    \draw[thick] (0,1.0) circle (1.0);
-    \fill ($(0,1.0)+(60:1.0)$) circle (3pt);
-    \fill ($(0,1.0)+(240:1.0)$) circle (3pt);
-    \node[below] at (0,-0.08) {$2$ 盏灯};
-  \end{scope}
-
-  \begin{scope}[shift={(6.4,0)}]
-    \draw[thick] (-1.45,0)--(1.45,0);
-    \draw[thick] (0,1.2) circle (1.2);
-    \fill ($(0,1.2)+(30:1.2)$) circle (3pt);
-    \fill ($(0,1.2)+(120:1.2)$) circle (3pt);
-    \fill ($(0,1.2)+(210:1.2)$) circle (3pt);
-    \fill ($(0,1.2)+(300:1.2)$) circle (3pt);
-    \node[below] at (0,-0.08) {$4$ 盏灯};
-  \end{scope}
-
-  \draw[->,thick] (8.2,0.8)--(9.4,0.8);
-
-  \begin{scope}[shift={(10.1,0)}]
-    \draw[thick] (0,0)--(3.0,0);
-    \foreach \x in {0.4,0.9,1.4,1.9,2.4}
-      \fill (\x,0) circle (3pt);
-    \node[below] at (1.5,-0.08) {极限：半整数点};
+  \draw[dashed] (0,0)--(0,4);
+  \draw[thick] (0,0.5) circle (0.5);
+  \draw[thick] (0,1) circle (1);
+  \draw[thick] (0,2) circle (2);
+  \draw[thin,dashed] (-1,1)--(1,1);
+  \draw[thin,dashed] (1.414,0.586)--(-1.414,3.414);
+  \draw[thin,dashed] (-1.414,0.586)--(1.414,3.414);
+  \fill[lampB] (1.414,0.586) circle (2.6pt);
+  \fill[lampB] (-1.414,0.586) circle (2.6pt);
+  \fill[lampB] (1.414,3.414) circle (2.6pt);
+  \fill[lampB] (-1.414,3.414) circle (2.6pt);
+  \fill[lampB] (1,1) circle (2.8pt);
+  \fill[lampB] (-1,1) circle (2.8pt);
+  \fill[lampA] (0,1) circle (3.4pt);
+  \fill (0,0) circle (1.8pt);
+  \node[below left] at (0,0) {$P$};
+  \draw[->,thick] (2.5,2)--(3.7,2);
+  \node[above,font=\footnotesize] at (3.1,2) {$k\to\infty$};
+  \begin{scope}[shift={(7.1,0)}]
+    \draw[thick] (-3.4,0)--(3.4,0);
+    \fill (0,0) circle (1.8pt);
+    \node[above] at (0,0) {$P$};
+    \foreach \x/\lab in {-2.8/-7,-2.0/-5,-1.2/-3,-0.4/-1,0.4/1,1.2/3,2.0/5,2.8/7} {
+      \fill[lampB] (\x,0) circle (2.6pt);
+      \node[below,font=\footnotesize] at (\x,-0.05) {$\lab$};
+    }
   \end{scope}
 \end{tikzpicture}
-\caption{半径与灯数同步翻倍，灯点保持等角间隔；圆在切点附近越来越接近直线，
-极限时得到半整数点。}
+\caption{}
 \label{fig:doubling-limit}
 \end{figure}
 
+半径趋于无穷时，圆在 $P$ 附近越来越像一条直线，弦长趋于弧长。
+极限状态是一条直线，$P$ 在原点，灯落在 $\pm1,\pm3,\pm5,\dots$ 处（图 \ref{fig:doubling-limit}），于是
+\begin{equation}
+  2\left(1+\frac{1}{3^{2}}+\frac{1}{5^{2}}+\cdots\right)=\frac{\pi^{2}}{4}.
+  \label{eq:odd-limit}
+\end{equation}
+
 \subsection{回到巴塞尔问题}
 
-设原级数为 $S$。偶数项之和为
+式 \eqref{eq:odd-limit} 两边除以 $2$，正奇数项之和为
 \begin{equation}
-  \frac14+\frac1{16}+\frac1{36}+\cdots=\frac14 S,
+  1+\frac{1}{3^{2}}+\frac{1}{5^{2}}+\cdots=\frac{\pi^{2}}{8}.
+  \label{eq:odd}
 \end{equation}
-因此奇数项之和等于 $\frac34 S$。由式 \eqref{eq:odd}，
+设原级数为 $S$。
+偶数项之和为 $\frac14 S$，
+故奇数项之和为 $\frac34 S$，于是
 \begin{equation}
-  \frac34 S=\frac{\pi^2}{8},
+  \frac34 S=\frac{\pi^{2}}{8},
   \qquad
-  S=\frac43\cdot\frac{\pi^2}{8}=\frac{\pi^2}{6}.
+  S=\frac43\cdot\frac{\pi^{2}}{8}=\frac{\pi^{2}}{6}.
 \end{equation}
 这就是巴塞尔问题的一个几何证明。
