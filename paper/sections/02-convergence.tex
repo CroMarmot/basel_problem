@@ -1,19 +1,14 @@
 \section{收敛性}
 
-在计算精确值之前，首先要确认级数收敛。由于
+在计算精确值之前，先确认级数收敛。对正项级数，只需裂项：
 \begin{equation}
-  \frac{1}{n^2}<\frac{1}{n(n-1)}
-  =\frac{1}{n-1}-\frac{1}{n}\qquad(n\ge 2),
+\begin{aligned}
+S&=\sum_{n=1}^{\infty}\frac{1}{n^2}
+=1+\sum_{n=2}^{\infty}\frac{1}{n^2}\\
+&<1+\sum_{n=2}^{\infty}\frac{1}{n(n-1)}
+=1+\sum_{n=2}^{\infty}\left(\frac{1}{n-1}-\frac{1}{n}\right)\\
+&=2.
+\end{aligned}
+\label{eq:convergence}
 \end{equation}
-于是部分和满足
-\begin{align}
-  \sum_{n=2}^{N}\frac{1}{n^2}
-  &<\sum_{n=2}^{N}\left(\frac{1}{n-1}-\frac{1}{n}\right) \notag\\
-  &=1-\frac{1}{N}<1 .
-\end{align}
-因此
-\begin{equation}
-  \sum_{n=1}^{\infty}\frac{1}{n^2}<2 .
-\end{equation}
-级数单调递增且有上界，所以必然收敛。这个估计虽然简单，却已经足以说明
-式 \eqref{eq:basel} 有有限值。
+右边的裂项和等于 $2$，因此 $S<2$。部分和单调递增且有上界，所以级数收敛。

@@ -17,7 +17,7 @@ SCENES = [
 CHAPTER_NUMBERS = {
     "intro": 1,
     "history": 2,
-    "convergence": 4,
+    "convergence": 3,
     "euler": 5,
     "fourier": 6,
     "geometry": 7,
