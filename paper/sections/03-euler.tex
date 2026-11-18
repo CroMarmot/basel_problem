@@ -1,0 +1,32 @@
+\section{欧拉的无穷乘积推导}
+
+欧拉的关键观察来自正弦函数的无穷乘积：
+\begin{equation}
+  \frac{\sin x}{x}
+  =\prod_{n=1}^{\infty}\left(1-\frac{x^2}{n^2\pi^2}\right).
+  \label{eq:product}
+\end{equation}
+另一方面，正弦函数的泰勒展开给出
+\begin{equation}
+  \frac{\sin x}{x}
+  =1-\frac{x^2}{3!}+\frac{x^4}{5!}-\cdots
+  =1-\frac{x^2}{6}+\frac{x^4}{120}-\cdots .
+  \label{eq:taylor}
+\end{equation}
+比较式 \eqref{eq:product} 与式 \eqref{eq:taylor} 中 $x^2$ 的系数。
+无穷乘积中 $x^2$ 的系数为
+\begin{equation}
+  -\sum_{n=1}^{\infty}\frac{1}{n^2\pi^2},
+\end{equation}
+而泰勒展开中 $x^2$ 的系数为 $-1/6$。因此
+\begin{equation}
+  -\frac{1}{6}
+  =-\sum_{n=1}^{\infty}\frac{1}{n^2\pi^2}.
+\end{equation}
+两边乘以 $-\pi^2$，立即得到
+\begin{equation}
+  \sum_{n=1}^{\infty}\frac{1}{n^2}=\frac{\pi^2}{6}.
+\end{equation}
+
+欧拉当时的推导还没有处理无穷乘积的收敛性与交换极限的合法性问题，
+但其结论是正确的。这也体现了数学中“先发现、后严格化”的常见过程。

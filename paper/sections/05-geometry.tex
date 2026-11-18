@@ -1,0 +1,46 @@
+\section{几何证明：Wästlund 的欧几里得方法}
+
+2010 年，瑞典数学家 Johan Wästlund 在短文
+\emph{Summing inverse squares by Euclidean geometry} 中给出了一个几何证明
+\cite{wastlund}。3Blue1Brown 后来的科普视频让这一方法广为人知
+\cite{threeblueonebrown}。
+
+证明的几何起点是反勾股定理。设直角三角形的两条直角边为 $a,b$，
+斜边上的高为 $h$，则
+\begin{equation}
+  \frac{1}{h^2}=\frac{1}{a^2}+\frac{1}{b^2}.
+  \label{eq:inverse-pythagoras}
+\end{equation}
+事实上，若斜边为 $c$，由面积公式 $ab=ch$，再结合 $c^2=a^2+b^2$，即得
+\begin{equation}
+  \frac{1}{h^2}
+  =\frac{c^2}{a^2b^2}
+  =\frac{a^2+b^2}{a^2b^2}
+  =\frac{1}{a^2}+\frac{1}{b^2}.
+\end{equation}
+
+Wästlund 的关键想法是反复使用式 \eqref{eq:inverse-pythagoras}。
+把若干个直角三角形按同一方式拼接，每一步都把一项倒数平方拆成两项；
+当拼接层数按 $2$ 的幂增加时，构造会越来越接近一个圆。
+在极限中，折线长度趋于圆弧长度，于是得到
+\begin{equation}
+  \sum_{n=-\infty}^{\infty}\frac{1}{\left(n-\frac12\right)^2}=\pi^2 .
+  \label{eq:wastlund}
+\end{equation}
+等价地，所有正奇数平方的倒数之和为
+\begin{equation}
+  1+\frac{1}{9}+\frac{1}{25}+\cdots=\frac{\pi^2}{8}.
+  \label{eq:odd}
+\end{equation}
+
+设原级数为 $S$。偶数项之和为
+\begin{equation}
+  \frac14+\frac1{16}+\frac1{36}+\cdots=\frac14 S,
+\end{equation}
+因此奇数项之和等于 $\frac34 S$。由式 \eqref{eq:odd}，
+\begin{equation}
+  \frac34 S=\frac{\pi^2}{8},
+  \qquad
+  S=\frac43\cdot\frac{\pi^2}{8}=\frac{\pi^2}{6}.
+\end{equation}
+这就是巴塞尔问题的一个几何证明。

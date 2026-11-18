@@ -1,0 +1,10 @@
+[project]
+name = "basel-problem"
+version = "0.1.0"
+description = "巴塞尔问题科普视频与 PDF 论文生成器"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "edge-tts>=6.1.14",
+    "manim>=0.18.0,<1.0.0",
+]

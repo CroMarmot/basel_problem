@@ -1,0 +1,64 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage{fontspec}
+\usepackage{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+\geometry{margin=2.3cm}
+
+\IfFontExistsTF{Noto Serif CJK SC}
+  {\setmainfont{Noto Serif CJK SC}}
+  {\setmainfont{Droid Sans Fallback}}
+\IfFontExistsTF{Noto Sans CJK SC}
+  {\setsansfont{Noto Sans CJK SC}}
+  {\setsansfont{Droid Sans Fallback}}
+\IfFontExistsTF{Noto Sans Mono CJK SC}
+  {\setmonofont{Noto Sans Mono CJK SC}}
+  {\setmonofont{Droid Sans Fallback}}
+
+\XeTeXlinebreaklocale "zh"
+\XeTeXlinebreakskip = 0pt plus 1pt minus 0.1pt
+\linespread{1.15}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue,
+  urlcolor=blue,
+  citecolor=blue
+}
+
+\newtheorem{theorem}{定理}[section]
+\newtheorem{lemma}[theorem]{引理}
+\renewcommand{\proofname}{证明}
+\renewcommand{\abstractname}{摘要}
+\renewcommand{\refname}{参考文献}
+\renewcommand{\contentsname}{目录}
+
+\title{\textbf{巴塞尔问题}\\[0.3em]
+\large 从平方倒数和到 $\dfrac{\pi^2}{6}$}
+\author{Basel Problem Notes}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+巴塞尔问题问的是所有正整数平方的倒数之和。本文介绍该问题的历史背景、收敛性，
+给出欧拉利用正弦函数无穷乘积的经典推导，并用傅里叶级数与帕塞瓦尔等式给出严格证明。
+最后介绍 Wästlund 利用欧几里得几何给出的另一个证明。
+\end{abstract}
+
+\tableofcontents
+
+\input{sections/01-problem.tex}
+\input{sections/02-convergence.tex}
+\input{sections/03-euler.tex}
+\input{sections/04-fourier.tex}
+\input{sections/05-geometry.tex}
+\input{sections/06-conclusion.tex}
+\input{sections/07-references.tex}
+
+\end{document}
