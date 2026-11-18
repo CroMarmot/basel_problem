@@ -69,7 +69,7 @@ temp/chapters/<三位编号>-<章节名>/
         └── merged.mp4
 ```
 
-例如第一章是 `temp/chapters/001-intro/`，后面的 history 是 `002-history`。数字前缀保证 Ubuntu 文件管理器和各类 IDE 按章节顺序排序。傅里叶章 `005-fourier`、几何章 `006-geometry` 按画面拆成多个子片段，章节视频由片段依次拼接而成。
+例如第一章是 `temp/chapters/001-intro/`，后面的 history 是 `002-history`。数字前缀保证 Ubuntu 文件管理器和各类 IDE 按章节顺序排序。傅里叶章 `005-fourier`、几何章 `006-geometry` 按画面拆成多个子片段，章节视频由片段依次拼接而成。只有 `intro` 这类章节 key 与子片段 key 相同时，产物才直接放在章节目录里；`007-summary` 的两屏仍然走 `segments/01-geometry_summary/`、`segments/02-geometry_question/`。
 
 只生成指定章节时，只会替换该章节目录，其他章节的中间产物会保留，结果留在 `temp/chapters/` 下，不写入 `output/`。完整运行会先清空 `temp/`，再重新生成全部章节并输出 `output/basel_problem_final.mp4`。`output/` 只保存最终视频和论文 PDF。
 
@@ -85,7 +85,7 @@ uv run ./basel_problem.py --segments geometry_circle
 # 3. 播一眼这一屏，人眼检查画面和配音是否对得上
 xdg-open temp/chapters/006-geometry/segments/03-geometry_circle/merged.mp4
 
-# 4. 满意后重建整章，章节视频由 5 个子片段依次拼接
+# 4. 满意后重建整章，章节视频由 6 个子片段依次拼接
 uv run ./basel_problem.py --chapters geometry
 ```
 
@@ -137,7 +137,8 @@ basel-problem/
 │   ├── convergence.py        # 003 收敛性
 │   ├── euler.py              # 004 欧拉的无穷乘积
 │   ├── fourier.py            # 005 傅里叶级数与帕塞瓦尔等式（3 屏）
-│   └── geometry.py           # 006 Wästlund 几何证明（5 屏）
+│   ├── geometry.py           # 006 Wästlund 几何证明（6 屏）
+│   └── summary.py            # 007 几何方法总结（2 屏）
 ├── paper/
 │   ├── basel_problem_paper.tex
 │   ├── build.py              # XeLaTeX 编译脚本
