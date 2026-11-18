@@ -47,12 +47,13 @@ uv run ./basel_problem.py --segments fourier_series,fourier_parseval,fourier_res
 uv run python paper/build.py
 ```
 
-章节 key 与子片段 key 分别来自 `scenes/__init__.py` 的 `CHAPTERS` 和 `SCENES`，
-两者必须与 `specs.md` 的 `### <key>` 一一对应，缺或多都会直接报错退出。
+章节 key 与子片段 key 分别来自 `scenes/__init__.py` 的 `CHAPTERS` 和 `SCENES`：
+每个章节对应一个语音原稿 `narration/zh/<章节 key>.md`，其中的 `## <key>` 小节必须与
+该章节的子片段一一对应，缺或多都会直接报错退出；`specs.md` 的 `### <key>` 只规定画面。
 
 ## 产物目录
 
-`specs.md` 是前置的章节规格与旁白来源。视频会逐章渲染、配音、合并，再拼接成片。
+`specs.md` 是人与 AI 约定成品的章节规格，`narration/zh/` 是逐字语音原稿。视频会逐章渲染、配音、合并，再拼接成片。
 
 中间产物保存在：
 
@@ -88,7 +89,7 @@ xdg-open temp/chapters/006-geometry/segments/03-geometry_circle/merged.mp4
 uv run ./basel_problem.py --chapters geometry
 ```
 
-旁白改在 `specs.md` 对应 `### <key>` 的 `**旁白**` 段落。`--segments` 会先删掉片段
+旁白改在 `narration/zh/<章节 key>.md` 对应 `## <key>` 小节里的正文。`--segments` 会先删掉片段
 目录，所以配音一定按新文字重新生成。排 `self.wait()` 时让动画总时长略大于旁白
 （多 0.5～1 秒）：音频比视频长时，合并会把最后一帧冻住补满，看起来像卡带。
 
@@ -125,7 +126,10 @@ sudo apt install texlive-xetex fonts-noto-cjk
 ```text
 basel-problem/
 ├── basel_problem.py          # 入口：参数、TTS、音视频合并与拼接
-├── specs.md                  # 前置规格：目标、章节旁白、论文结构
+├── specs.md                  # 前置规格：目标、章节画面、论文结构
+├── narration/
+│   ├── README.md             # 语音原稿的写法与同音替字表
+│   └── zh/                   # 中文逐字稿，一章一个文件（将来英文稿放 en/）
 ├── scenes/
 │   ├── common.py             # 字体与强调色
 │   ├── intro.py              # 001 巴塞尔问题

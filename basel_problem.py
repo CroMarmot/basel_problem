@@ -44,53 +44,56 @@ OUTPUT_DIR = BASE_DIR / "output"
 TEMP_DIR.mkdir(exist_ok=True)
 OUTPUT_DIR.mkdir(exist_ok=True)
 config.media_dir = str(TEMP_DIR / "manim_media")
-SPEC_PATH = BASE_DIR / "specs.md"
+NARRATION_DIR = BASE_DIR / "narration"
+NARRATION_LANG = "zh"
 SCENE_MAP = dict(SCENES)
 
 
-def load_script_segments(spec_path: Path) -> dict[str, str]:
-    """从 specs.md 的「章节脚本」段落读取每章旁白。"""
-    if not spec_path.exists():
-        raise SystemExit(f"缺少章节脚本规格文件: {spec_path}")
+def load_chapter_narration(chapter_key: str, lang: str = NARRATION_LANG) -> dict[str, str]:
+    """读取 narration/<lang>/<chapter>.md，返回 {子片段 key: TTS 逐字原稿}。"""
+    path = NARRATION_DIR / lang / f"{chapter_key}.md"
+    if not path.exists():
+        raise SystemExit(f"缺少语音原稿: {path}")
 
-    text = spec_path.read_text(encoding="utf-8")
-    section_match = re.search(r"^##\s+章节脚本\s*$", text, re.MULTILINE)
-    if section_match is None:
-        raise SystemExit("specs.md 中缺少 '## 章节脚本' 段落")
-
-    section = text[section_match.end() :]
-    next_h2 = re.search(r"^##\s+", section, re.MULTILINE)
-    if next_h2 is not None:
-        section = section[: next_h2.start()]
-
-    headings = list(re.finditer(r"^###\s+([A-Za-z0-9_-]+)\s*$", section, re.MULTILINE))
+    text = path.read_text(encoding="utf-8")
+    headings = list(re.finditer(r"^##\s+([A-Za-z0-9_-]+)\s*$", text, re.MULTILINE))
     if not headings:
-        raise SystemExit("specs.md 的「章节脚本」中没有任何 '### 章节名'")
+        raise SystemExit(f"{path} 中没有任何 '## 子片段名'")
 
     segments: dict[str, str] = {}
     for index, heading in enumerate(headings):
         key = heading.group(1)
-        block_end = headings[index + 1].start() if index + 1 < len(headings) else len(section)
-        block = section[heading.end() : block_end]
-
-        narration_match = re.search(r"^\*\*旁白\*\*\s*$", block, re.MULTILINE)
-        if narration_match is None:
-            raise SystemExit(f"章节 {key} 缺少 '**旁白**' 段落")
-
-        narration = block[narration_match.end() :]
-        next_label = re.search(r"^\*\*[^*]+\*\*\s*$", narration, re.MULTILINE)
-        if next_label is not None:
-            narration = narration[: next_label.start()]
-
-        narration = narration.strip()
-        if not narration:
-            raise SystemExit(f"章节 {key} 的旁白为空")
-        segments[key] = narration
+        block_end = headings[index + 1].start() if index + 1 < len(headings) else len(text)
+        body = text[heading.end() : block_end].strip()
+        if not body:
+            raise SystemExit(f"{path} 的 {key} 旁白为空")
+        if key in segments:
+            raise SystemExit(f"{path} 的 {key} 重复")
+        segments[key] = body
 
     return segments
 
 
-SCRIPT_SEGMENTS = load_script_segments(SPEC_PATH)
+def load_narration(lang: str = NARRATION_LANG) -> dict[str, str]:
+    """按章节汇总语音原稿，并与 scenes 里的章节/子片段做一致性校验。"""
+    narration: dict[str, str] = {}
+    for chapter_key, _, chapter_segments in CHAPTERS:
+        chapter_text = load_chapter_narration(chapter_key, lang)
+        unknown = [key for key in chapter_text if key not in chapter_segments]
+        if unknown:
+            raise SystemExit(
+                f"narration/{lang}/{chapter_key}.md 多出未使用的子片段: {', '.join(unknown)}"
+            )
+        missing = [key for key in chapter_segments if key not in chapter_text]
+        if missing:
+            raise SystemExit(
+                f"narration/{lang}/{chapter_key}.md 缺少旁白: {', '.join(missing)}"
+            )
+        narration.update(chapter_text)
+    return narration
+
+
+SCRIPT_SEGMENTS = load_narration()
 
 
 def reset_temp_dir() -> None:
@@ -291,16 +294,6 @@ async def render_segment(segment_key: str, segment_dir: Path) -> Path:
 async def main() -> None:
     args = parse_args()
     chapter_map = {key: (number, segments) for key, number, segments in CHAPTERS}
-
-    missing = [key for key, _ in SCENES if key not in SCRIPT_SEGMENTS]
-    unused = [key for key in SCRIPT_SEGMENTS if key not in SCENE_MAP]
-    if missing or unused:
-        details = []
-        if missing:
-            details.append(f"specs.md 缺少旁白: {', '.join(missing)}")
-        if unused:
-            details.append(f"specs.md 多出未使用章节: {', '.join(unused)}")
-        raise SystemExit("\n".join(details))
 
     if args.list:
         for chapter_key, number, segments in CHAPTERS:

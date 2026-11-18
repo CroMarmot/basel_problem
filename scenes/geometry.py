@@ -7,6 +7,7 @@ from manim import (
     UP,
     WHITE,
     Arc,
+    Arrow,
     Circle,
     Create,
     DashedLine,
@@ -543,40 +544,153 @@ class BaselGeometryLimit(Scene):
         self.play(FadeOut(everything), run_time=0.5)
 
 
+TERM_COUNT = 5
+GRID_COLUMNS = 4 * TERM_COUNT + 1
+
+
+def _term(den: int) -> str:
+    return "1" if den == 1 else r"\frac{1}{%d}" % den
+
+
+def _grid_row(prefix: str, slots: dict, rhs: str = "") -> str:
+    cells = {0: prefix, GRID_COLUMNS + 1: rhs}
+    cells.update(slots)
+    return "&".join(cells.get(index, "") for index in range(GRID_COLUMNS + 2))
+
+
+def _odd_row() -> str:
+    slots = {}
+    for k in range(1, TERM_COUNT + 1):
+        slots[4 * k - 3] = _term((2 * k - 1) ** 2)
+        if k > 1:
+            slots[4 * k - 4] = "+"
+    slots[GRID_COLUMNS - 1] = "+"
+    slots[GRID_COLUMNS] = r"\cdots"
+    return _grid_row("", slots, r"=\frac{\pi^{2}}{8}")
+
+
+def _whole_row() -> str:
+    slots = {}
+    for k in range(1, 2 * TERM_COUNT + 1):
+        slots[2 * k - 1] = _term(k**2)
+        if k < 2 * TERM_COUNT:
+            slots[2 * k] = "+"
+    slots[GRID_COLUMNS - 1] = "+"
+    slots[GRID_COLUMNS] = r"\cdots"
+    return _grid_row("S=", slots)
+
+
+def _even_row() -> str:
+    slots = {}
+    for k in range(1, TERM_COUNT + 1):
+        slots[4 * k - 1] = _term((2 * k) ** 2)
+        if k > 1:
+            slots[4 * k - 2] = "+"
+    slots[GRID_COLUMNS - 1] = "+"
+    slots[GRID_COLUMNS] = r"\cdots"
+    return _grid_row(r"\frac{1}{4}S=", slots)
+
+
+def _ruler_row() -> str:
+    return _grid_row("", {index: r"\scriptstyle\cdot" for index in range(1, GRID_COLUMNS + 1)})
+
+
+ODD_EVEN_GRID = (
+    r"\begin{array}{r*{%d}{c}r}" % GRID_COLUMNS
+    + _odd_row()
+    + r"\\[12pt]"
+    + _whole_row()
+    + r"\\[46pt]"
+    + _even_row()
+    + r"\\[10pt]"
+    + _ruler_row()
+    + r"\end{array}"
+)
+
+
 class BaselGeometryResult(Scene):
     """屏幕 6：奇数项与偶数项合并回 S。"""
+
+    def split_rows(self, grid: MathTex, count: int) -> list:
+        leaves = [leaf for leaf in grid.get_family() if not leaf.submobjects]
+        ys = sorted({round(leaf.get_center()[1], 3) for leaf in leaves})
+        gaps = sorted(
+            range(len(ys) - 1), key=lambda i: ys[i + 1] - ys[i], reverse=True
+        )[: count - 1]
+        cuts = sorted((ys[i] + ys[i + 1]) / 2 for i in gaps)
+        rows = [VGroup() for _ in range(count)]
+        for leaf in leaves:
+            index = sum(cut < leaf.get_center()[1] for cut in cuts)
+            rows[index].add(leaf)
+        return sorted(rows, key=lambda row: -row.get_center()[1])
+
+    def build_arrows(self, ruler: VGroup, row_all: VGroup, row_even: VGroup):
+        columns = sorted(leaf.get_center()[0] for leaf in ruler)
+        arrows = VGroup()
+        labels = VGroup()
+        top = row_all.get_bottom()[1]
+        bot = row_even.get_top()[1]
+        for k in range(1, TERM_COUNT + 1):
+            # S 行里 1/k^2 占第 2k-1 列，偶数行里它对应的 1/(2k)^2 占第 4k-1 列。
+            source = columns[2 * k - 2]
+            target = columns[4 * k - 2]
+            labels.add(
+                MathTex(r"\times\frac{1}{4}")
+                .scale(0.28)
+                .move_to([source, top - 0.26, 0.0])
+            )
+            arrows.add(
+                Arrow(
+                    np.array([source, top - 0.52, 0.0]),
+                    np.array([target, bot + 0.06, 0.0]),
+                    buff=0.0,
+                    stroke_width=4,
+                    tip_length=0.13,
+                    max_stroke_width_to_length_ratio=12,
+                )
+            )
+        return arrows, labels
 
     def construct(self):
         title = heading("回到巴塞尔问题", "Back to Basel")
 
-        line_1 = MathTex(
-            r"2\left(1+\frac{1}{9}+\frac{1}{25}+\cdots\right)=\frac{\pi^2}{4}"
-        ).scale(0.8)
-        line_2 = MathTex(r"1+\frac{1}{9}+\frac{1}{25}+\cdots=\frac{\pi^2}{8}").scale(0.85)
-        line_3 = cn("偶数项 = S/4，奇数项 = 3S/4", 0.55)
-        line_4 = MathTex(r"\frac{3S}{4}=\frac{\pi^2}{8}").scale(0.9)
-        line_5 = MathTex(
-            r"S=\frac{4}{3}\cdot\frac{\pi^2}{8}=\frac{\pi^2}{6}"
-        ).scale(1.0)
-        algebra = VGroup(line_1, line_2, line_3, line_4, line_5).arrange(
-            DOWN, buff=0.28
-        )
-        algebra.move_to(DOWN * 0.35)
+        grid = MathTex(ODD_EVEN_GRID).scale(0.55)
+        row_odd, row_all, row_even, ruler = self.split_rows(grid, 4)
+        # 标尺行只用来取列位置，不入画，所以按可见的三行来定位。
+        grid.shift(UP * 1.05 - VGroup(row_odd, row_all, row_even).get_center())
+        arrows, labels = self.build_arrows(ruler, row_all, row_even)
+
+        f_final = MathTex(
+            r"S=\frac{\pi^2}{8}\cdot\frac{1}{1-\frac{1}{4}}=\frac{\pi^2}{6}"
+        ).scale(0.85)
+        f_final.move_to(DOWN * 1.6)
 
         credit = cn("Johan Wästlund · 2010 · 3Blue1Brown", 0.38)
         credit.to_edge(DOWN, buff=0.35)
         credit.set_opacity(0.7)
 
         self.play(Write(title[0]), FadeIn(title[1]), run_time=0.8)
-        self.play(Write(line_1), run_time=1.0)
-        self.wait(4.5)
-        self.play(Write(line_2), run_time=0.9)
-        self.wait(2.0)
-        self.play(FadeIn(line_3, shift=UP), run_time=0.8)
-        self.wait(2.2)
-        self.play(Write(line_4), run_time=0.8)
-        self.wait(1.8)
-        self.play(Write(line_5), run_time=1.0)
+        self.play(FadeIn(row_odd), run_time=0.9)
+        self.wait(3.6)
+        self.play(FadeIn(row_all), run_time=0.9)
+        self.wait(3.8)
+        self.play(FadeIn(row_even), run_time=0.9)
+        self.wait(0.4)
+        self.play(
+            LaggedStart(
+                *[
+                    animation
+                    for pair in zip(arrows, labels)
+                    for animation in (FadeIn(pair[0]), FadeIn(pair[1]))
+                ],
+                lag_ratio=0.12,
+            ),
+            run_time=1.3,
+        )
+        self.wait(2.4)
+        self.wait(1.6)
+        self.play(Write(f_final), run_time=1.6)
+        self.wait(1.6)
         self.play(FadeIn(credit), run_time=0.5)
-        self.play(line_5.animate.set_color(ACCENT), run_time=0.9)
-        self.wait(1.5)
+        self.play(f_final.animate.set_color(ACCENT), run_time=0.9)
+        self.wait(0.4)

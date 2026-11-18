@@ -203,12 +203,22 @@ $P$ 点的总亮度不变。逐条推导见文献 \cite{wastlund}。
   1+\frac{1}{3^{2}}+\frac{1}{5^{2}}+\cdots=\frac{\pi^{2}}{8}.
   \label{eq:odd}
 \end{equation}
-设原级数为 $S$。
-偶数项之和为 $\frac14 S$，
-故奇数项之和为 $\frac34 S$，于是
+设原级数为 $S$，则偶数项之和为 $\frac14 S$。
 \begin{equation}
-  \frac34 S=\frac{\pi^{2}}{8},
-  \qquad
-  S=\frac43\cdot\frac{\pi^{2}}{8}=\frac{\pi^{2}}{6}.
+  \resizebox{\textwidth}{!}{$
+  \begin{array}{r*{21}{c}r}
+    &1&&&+&\frac{1}{3^{2}}&&&+&\frac{1}{5^{2}}&&&+&\frac{1}{7^{2}}&&&+&\frac{1}{9^{2}}
+    &&&+&\cdots&=\frac{\pi^{2}}{8}\\[14pt]
+    S=&1&+&\frac{1}{2^{2}}&+&\frac{1}{3^{2}}&+&\frac{1}{4^{2}}&+&\frac{1}{5^{2}}
+    &+&\frac{1}{6^{2}}&+&\frac{1}{7^{2}}&+&\frac{1}{8^{2}}&+&\frac{1}{9^{2}}
+    &+&\frac{1}{10^{2}}&+&\cdots&\\[20pt]
+    \frac{1}{4}S=&&&\frac{1}{2^{2}}&&&+&\frac{1}{4^{2}}&&&+&\frac{1}{6^{2}}
+    &&&+&\frac{1}{8^{2}}&&&+&\frac{1}{10^{2}}&+&\cdots&
+  \end{array}$}
+  \label{eq:odd-even}
+\end{equation}
+奇数项加偶数项正好是 $S$，于是
+\begin{equation}
+  S=\frac{\pi^{2}}{8}\cdot\frac{1}{1-\frac14}=\frac{\pi^{2}}{6}.
 \end{equation}
 这就是巴塞尔问题的一个几何证明。
