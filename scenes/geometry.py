@@ -703,7 +703,7 @@ class BaselGeometryResult(Scene):
 
 
 THREEB_DIR = Path(__file__).parent / "3b1b"
-# 裁出播放器画面本身（16:9），去掉浏览器页面背景和两侧留白。
+# 裁出播放器画面本身（16:9），去掉浏览器页面背景和左右留白。
 SUMMARY_FRAMES = [
     ("3b1b", 57, 809, 5, 1342),
     ("sub0", 65, 816, 3, 1339),
@@ -765,7 +765,7 @@ def mini_lamp_switch() -> VGroup:
 
 
 class BaselGeometrySummary(Scene):
-    """屏幕 7：左侧四步串起几何路线，右侧展示参考截图。"""
+    """屏幕 7：四步串起几何路线，末尾用参考截图盖住总结。"""
 
     def build_steps(self) -> VGroup:
         minis = {"②": mini_inverse_pythagoras, "③": mini_lamp_switch}
@@ -776,7 +776,7 @@ class BaselGeometrySummary(Scene):
                 line = VGroup(line, minis[text[0]]()).arrange(RIGHT, buff=0.3)
             steps.add(VGroup(cn(text, 0.36), line).arrange(DOWN, aligned_edge=LEFT, buff=0.06))
         steps.arrange(DOWN, aligned_edge=LEFT, buff=0.17)
-        steps.move_to(LEFT * 4.2 + DOWN * 0.3)
+        steps.move_to(DOWN * 0.3)
         return steps
 
     def framed(self, spec: tuple) -> Group:
@@ -787,11 +787,11 @@ class BaselGeometrySummary(Scene):
         return Group(picture, border)
 
     def build_pictures(self) -> tuple[Group, Group]:
-        big = self.framed((*SUMMARY_FRAMES[0], 8.0))
-        big.move_to(RIGHT * 2.7 + UP * 0.25)
-        smalls = Group(*[self.framed((*row, 2.67)) for row in SUMMARY_FRAMES[1:]])
-        smalls.arrange(RIGHT, aligned_edge=DOWN, buff=0.18)
-        smalls.move_to(RIGHT * 2.7 + DOWN * 3.0)
+        big = self.framed((*SUMMARY_FRAMES[0], 8.2))
+        big.move_to(DOWN * 0.3)
+        smalls = Group(*[self.framed((*row, 4.0)) for row in SUMMARY_FRAMES[1:]])
+        smalls.arrange(RIGHT, aligned_edge=DOWN, buff=0.2)
+        smalls.move_to(DOWN * 2.2)
         return big, smalls
 
     def construct(self):
@@ -826,7 +826,7 @@ class BaselGeometrySummary(Scene):
         self.play(FadeIn(big), run_time=1.4)
         self.wait(2.65)
         self.play(
-            LaggedStart(*[FadeIn(picture) for picture in smalls], lag_ratio=0.3),
-            run_time=2.2,
+            LaggedStart(*[FadeIn(picture) for picture in smalls], lag_ratio=0.35),
+            run_time=2.6,
         )
-        self.wait(2.7)
+        self.wait(2.3)
