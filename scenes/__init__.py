@@ -15,7 +15,11 @@ from .geometry import (
 )
 from .history import BaselHistory
 from .intro import BaselIntro
-from .summary import BaselGeometryQuestion, BaselGeometrySummary
+from .summary import (
+    BaselGeometryDirect,
+    BaselGeometryQuestion,
+    BaselGeometrySummary,
+)
 
 SCENES = [
     ("intro", BaselIntro),
@@ -33,6 +37,7 @@ SCENES = [
     ("geometry_result", BaselGeometryResult),
     ("geometry_summary", BaselGeometrySummary),
     ("geometry_question", BaselGeometryQuestion),
+    ("geometry_direct", BaselGeometryDirect),
 ]
 
 CHAPTERS = [
@@ -49,7 +54,11 @@ CHAPTERS = [
         "geometry_limit",
         "geometry_result",
     ]),
-    ("summary", 7, ["geometry_summary", "geometry_question"]),
+    (
+        "summary",
+        7,
+        ["geometry_summary", "geometry_question", "geometry_direct"],
+    ),
 ]
 
 CHAPTER_NUMBERS = {key: number for key, number, _ in CHAPTERS}
