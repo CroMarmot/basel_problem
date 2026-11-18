@@ -12,6 +12,7 @@ from .geometry import (
     BaselGeometryLimit,
     BaselGeometryPythagoras,
     BaselGeometryResult,
+    BaselGeometrySummary,
 )
 from .history import BaselHistory
 from .intro import BaselIntro
@@ -30,6 +31,7 @@ SCENES = [
     ("geometry_doubling", BaselGeometryDoubling),
     ("geometry_limit", BaselGeometryLimit),
     ("geometry_result", BaselGeometryResult),
+    ("geometry_summary", BaselGeometrySummary),
 ]
 
 CHAPTERS = [
@@ -45,6 +47,7 @@ CHAPTERS = [
         "geometry_doubling",
         "geometry_limit",
         "geometry_result",
+        "geometry_summary",
     ]),
 ]
 
