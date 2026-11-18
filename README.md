@@ -17,36 +17,85 @@ uv run ./basel_problem.py
 output/basel_problem_final.mp4
 ```
 
-## 分章生成
-
-`specs.md` 是前置的章节规格与旁白来源。视频会逐章渲染、配音、合并，再拼接成片。
+如果机器上没有 `uv`，直接用虚拟环境的解释器，效果相同：
 
 ```bash
-# 查看章节
+.venv/bin/python ./basel_problem.py --chapters geometry
+.venv/bin/python paper/build.py
+```
+
+## 常用命令
+
+```bash
+# 列出全部章节和子片段（含每段旁白），确认 key 拼写
 uv run ./basel_problem.py --list
 
-# 只生成第一章，结果在 temp/chapters/001-intro/merged.mp4
-uv run ./basel_problem.py --chapters intro
+# 整片重建：清空 temp/，重渲所有章节，写入 output/basel_problem_final.mp4
+uv run ./basel_problem.py
+
+# 重建某一章：只覆盖该章的 temp 目录，不动其他章节，也不写 output/
+uv run ./basel_problem.py --chapters geometry
+uv run ./basel_problem.py --chapters intro,history,fourier
+
+# 只重渲某一屏（改动画节拍时用这个，最快）
+uv run ./basel_problem.py --segments geometry_circle
+
+# 一次重渲几屏，逗号分隔
+uv run ./basel_problem.py --segments fourier_series,fourier_parseval,fourier_result
+
+# 重建论文 PDF（XeLaTeX 两遍 + 字体与 Missing character 检查）
+uv run python paper/build.py
 ```
+
+章节 key 与子片段 key 分别来自 `scenes/__init__.py` 的 `CHAPTERS` 和 `SCENES`，
+两者必须与 `specs.md` 的 `### <key>` 一一对应，缺或多都会直接报错退出。
+
+## 产物目录
+
+`specs.md` 是前置的章节规格与旁白来源。视频会逐章渲染、配音、合并，再拼接成片。
 
 中间产物保存在：
 
 ```text
 temp/chapters/<三位编号>-<章节名>/
-├── silent.mp4
+├── silent.mp4                 # 单片段章节
 ├── <章节名>.mp3
-└── merged.mp4
+├── merged.mp4
+└── segments/                  # 多片段章节
+    └── <两位序号>-<片段名>/
+        ├── silent.mp4
+        ├── <片段名>.mp3
+        └── merged.mp4
 ```
 
-例如第一章是 `temp/chapters/001-intro/`，后面的 history 是 `002-history`。数字前缀保证 Ubuntu 文件管理器和各类 IDE 按章节顺序排序。
+例如第一章是 `temp/chapters/001-intro/`，后面的 history 是 `002-history`。数字前缀保证 Ubuntu 文件管理器和各类 IDE 按章节顺序排序。傅里叶章 `005-fourier`、几何章 `006-geometry` 按画面拆成多个子片段，章节视频由片段依次拼接而成。
 
 只生成指定章节时，只会替换该章节目录，其他章节的中间产物会保留，结果留在 `temp/chapters/` 下，不写入 `output/`。完整运行会先清空 `temp/`，再重新生成全部章节并输出 `output/basel_problem_final.mp4`。`output/` 只保存最终视频和论文 PDF。
 
-## 生成 PDF 论文
+动画时长与旁白时长按片段补齐，因此每个片段只覆盖一屏内容，避免整章音画漂移。
+
+## 改一屏的典型流程
 
 ```bash
-uv run python paper/build.py
+# 1. 改动画：编辑 scenes/geometry.py 里对应的 Scene 类
+# 2. 只重渲这一屏（终端会打印这一段的视频时长与音频时长）
+uv run ./basel_problem.py --segments geometry_circle
+
+# 3. 播一眼这一屏，人眼检查画面和配音是否对得上
+xdg-open temp/chapters/006-geometry/segments/03-geometry_circle/merged.mp4
+
+# 4. 满意后重建整章，章节视频由 5 个子片段依次拼接
+uv run ./basel_problem.py --chapters geometry
 ```
+
+旁白改在 `specs.md` 对应 `### <key>` 的 `**旁白**` 段落。`--segments` 会先删掉片段
+目录，所以配音一定按新文字重新生成。排 `self.wait()` 时让动画总时长略大于旁白
+（多 0.5～1 秒）：音频比视频长时，合并会把最后一帧冻住补满，看起来像卡带。
+
+## 生成 PDF 论文
+
+编译命令见上面的「常用命令」，`paper/build.py` 会检查字体、跑两遍 XeLaTeX，
+并在日志出现 `Missing character` 时报错退出（中文静默变空白的常见来源）。
 
 最终 PDF 输出到：
 
@@ -83,8 +132,8 @@ basel-problem/
 │   ├── history.py            # 002 从蒙戈利到欧拉
 │   ├── convergence.py        # 003 收敛性
 │   ├── euler.py              # 004 欧拉的无穷乘积
-│   ├── fourier.py            # 005 傅里叶级数与帕塞瓦尔等式
-│   └── geometry.py           # 007 Wästlund 几何证明
+│   ├── fourier.py            # 005 傅里叶级数与帕塞瓦尔等式（3 屏）
+│   └── geometry.py           # 006 Wästlund 几何证明（5 屏）
 ├── paper/
 │   ├── basel_problem_paper.tex
 │   ├── build.py              # XeLaTeX 编译脚本

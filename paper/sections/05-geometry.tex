@@ -3,35 +3,236 @@
 2010 年，瑞典数学家 Johan Wästlund 在短文
 \emph{Summing inverse squares by Euclidean geometry} 中给出了一个几何证明
 \cite{wastlund}。3Blue1Brown 后来的科普视频让这一方法广为人知
-\cite{threeblueonebrown}。
+\cite{threeblueonebrown}。证明的核心，是把平方倒数看成光的亮度，再用反勾股定理
+把一盏灯换成两盏灯，并保持观察点 $P$ 处的总亮度不变。
 
-证明的几何起点是反勾股定理。设直角三角形的两条直角边为 $a,b$，
-斜边上的高为 $h$，则
+\subsection{亮度与平方反比}
+
+设点光源在 $P$，接收面与光线垂直。距离为 $r$ 时，同样的光通量分布在面积为
+$4\pi r^2$ 的球面上，所以单位面积接收到的亮度为
 \begin{equation}
-  \frac{1}{h^2}=\frac{1}{a^2}+\frac{1}{b^2}.
-  \label{eq:inverse-pythagoras}
+  B(r)=\frac{L}{4\pi r^2}\propto\frac{1}{r^2}.
+  \label{eq:inverse-square}
 \end{equation}
-事实上，若斜边为 $c$，由面积公式 $ab=ch$，再结合 $c^2=a^2+b^2$，即得
+距离翻倍，亮度就只剩四分之一。Wästlund 的构造把灯点看成光源，把两个圆的公共切点
+$P$ 看成观察点；于是“距离平方的倒数”正好就是“在 $P$ 点看到的亮度”。
+
+\subsection{反勾股定理}
+
+设直角三角形的两条直角边为 $a,b$，斜边为 $c$，斜边上的高为 $h$。由面积公式
+$ab=ch$ 与 $c^2=a^2+b^2$，即得反勾股定理
 \begin{equation}
   \frac{1}{h^2}
   =\frac{c^2}{a^2b^2}
   =\frac{a^2+b^2}{a^2b^2}
   =\frac{1}{a^2}+\frac{1}{b^2}.
+  \label{eq:inverse-pythagoras}
 \end{equation}
 
-Wästlund 的关键想法是反复使用式 \eqref{eq:inverse-pythagoras}。
-把若干个直角三角形按同一方式拼接，每一步都把一项倒数平方拆成两项；
-当拼接层数按 $2$ 的幂增加时，构造会越来越接近一个圆。
-在极限中，折线长度趋于圆弧长度，于是得到
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[scale=0.82, every node/.style={font=\small}]
+  \begin{scope}
+    \coordinate (A) at (0,0);
+    \coordinate (B) at (4,0);
+    \coordinate (C) at (1.2,1.833);
+    \coordinate (H) at (1.2,0);
+    \draw[thick] (A)--(B)--(C)--cycle;
+    \draw[thick] (C)--(H);
+    \draw (1.4,0)--(1.4,0.2)--(1.2,0.2);
+    \draw (1.063,1.624)--(1.272,1.487)--(1.409,1.696);
+    \node[left] at (0.55,0.95) {$a$};
+    \node[right] at (2.75,0.95) {$b$};
+    \node[right] at (1.35,0.95) {$h$};
+    \node[below] at (2,0) {$c$};
+    \node[below left] at (A) {$A$};
+    \node[below right] at (B) {$B$};
+    \node[above] at (C) {$C$};
+  \end{scope}
+
+  \begin{scope}[shift={(7.2,0.5)}]
+    \coordinate (P) at (0,0);
+    \coordinate (O1) at (0,1);
+    \coordinate (O2) at (0,2);
+    \draw[thick] (O1) circle (1);
+    \draw[thick] (O2) circle (2);
+    \coordinate (R) at (0.866,1.5);
+    \coordinate (S1) at (1.732,1);
+    \coordinate (S2) at (-1.732,3);
+    \draw[dashed] (S2)--(S1);
+    \draw[thick] (P)--(R);
+    \draw[thick] (P)--(S1);
+    \draw[thick] (P)--(S2);
+    \fill (R) circle (2.8pt);
+    \fill (S1) circle (2.4pt);
+    \fill (S2) circle (2.4pt);
+    \fill (O1) circle (1.6pt);
+    \fill (O2) circle (1.6pt);
+    \draw (0.776,1.344)--(0.932,1.254)--(1.022,1.410);
+    \draw (0.173,0.1)--(0.073,0.273)--(-0.1,0.173);
+    \node[above right] at (R) {$R$};
+    \node[right] at (S1) {$S_1$};
+    \node[left] at (S2) {$S_2$};
+    \node[below] at (P) {$P$};
+  \end{scope}
+\end{tikzpicture}
+\caption{左：反勾股定理。右：等亮度替换。}
+\label{fig:circle-replacement}
+\end{figure}
+
+\subsection{一盏灯换成两盏灯}
+
+设两圆 $C_1,C_2$ 的半径分别为 $r_1,r_2$，$R$ 是 $C_1$ 上的一盏灯，$P$ 是观察点；
+过 $R$ 作 $RP$ 的垂线，交 $C_2$ 于 $S_1,S_2$（图 \ref{fig:circle-replacement}）。
+
+\textbf{条件。}
+\begin{enumerate}
+  \item $r_2=2r_1$；
+  \item $C_1,C_2$ 相切于观察点 $P$；
+  \item $PR\perp S_1S_2$。
+\end{enumerate}
+
+\textbf{表达式。} 把反勾股定理 \eqref{eq:inverse-pythagoras} 用于 $\triangle PS_1S_2$，
+再由亮度公式 \eqref{eq:inverse-square} 把平方倒数读成 $P$ 点接收到的亮度：
 \begin{equation}
-  \sum_{n=-\infty}^{\infty}\frac{1}{\left(n-\frac12\right)^2}=\pi^2 .
-  \label{eq:wastlund}
+  \underbrace{\frac{1}{PR^{2}}}_{C_1\text{ 上一盏灯}}
+  \;=\;
+  \underbrace{\frac{1}{PS_1^{2}}+\frac{1}{PS_2^{2}}}_{C_2\text{ 上两盏灯}}.
+  \label{eq:star-replacement}
 \end{equation}
-等价地，所有正奇数平方的倒数之和为
+
+\textbf{结论。} 小圆上一盏灯带来的亮度，可以换成大圆上两盏灯的等效亮度；替换前后
+$P$ 点的总亮度不变。逐条推导见文献 \cite{wastlund}。
+
+\subsection{翻倍：$N$ 等分点换成 $2N$ 等分点}
+
+把小圆换成它的 $N$ 等分点，
+每一盏灯都照上一步替换（连向大圆的圆心 $O_2$ 并双向延长），
+再观察汇聚于 $O_2$ 的这些角：
+对小圆来说，它们是相邻两盏灯的圆周角，两两相等；
+对大圆来说，它们是同一些射线的圆心角，也两两相等。
+射线正反两个方向各给出 $N$ 个点，合起来正好是大圆的 $2N$ 等分点，
+而每一盏灯的替换都不改变 $P$ 点的亮度。
+于是小圆的 $N$ 等分点等价于大圆上「对应的」$2N$ 等分点（图 \ref{fig:doubling}）。
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[scale=0.78, every node/.style={font=\small}]
+  \coordinate (P) at (0,0);
+  \coordinate (O1) at (0,1);
+  \coordinate (O2) at (0,2);
+  \draw[thick] (O1) circle (1);
+  \draw[thick] (O2) circle (2);
+  \coordinate (R1) at (0.5,1.866);
+  \coordinate (R2) at (0.5,0.134);
+  \coordinate (R3) at (-1,1);
+  \foreach \a [evaluate=\a as \c using {\a+180}] in {45,105,165}
+    \draw[thin] ($(O2)+(\a:2)$)--($(O2)+(\c:2)$);
+  \draw[thin] (P)--(R1);
+  \draw[thin] (P)--(R2);
+  \draw[thin] (P)--(R3);
+  \foreach \a in {45,105,165,225,285,345}
+    \fill[lampB] ($(O2)+(\a:2)$) circle (2.6pt);
+  \fill[lampA] (R1) circle (3.2pt);
+  \fill[lampA] (R2) circle (3.2pt);
+  \fill[lampA] (R3) circle (3.2pt);
+  \fill (O1) circle (1.3pt);
+  \fill (O2) circle (1.3pt);
+  \node[above left] at ($(O2)+(-0.24,0.24)$) {$O_2$};
+  \node[below] at (P) {$P$};
+\end{tikzpicture}
+\caption{小圆的 $3$ 等分点换成大圆上对应的 $6$ 等分点。}
+\label{fig:doubling}
+\end{figure}
+
+\subsection{极限：趋于半整数点}
+
+对大圆上的每盏灯再重复同样的操作，半径与灯数同步翻倍：第 $k$ 层圆的半径为
+$2^k r_1$、灯数为 $2^k$，且灯点保持等角间隔；$P$ 点的总亮度在每一步都不变。
+
+为了算出极限，设初始圆半径 $R_0=\frac{1}{2\pi}$，初始那盏灯对应的圆周角为
+$\varphi$。第 $k$ 层圆的半径为 $R_k=2^kR_0$。由圆的弦长公式，第 $m$ 盏灯到
+$P$ 的距离为
+\begin{equation}
+  d_{k,m}
+  =2R_k\left|\sin\left(\frac{\varphi+2\pi m}{2^{k+1}}\right)\right|.
+\end{equation}
+令 $k\to\infty$，利用 $\sin t\sim t$，得到
+\begin{equation}
+  d_{k,m}\longrightarrow
+  \left|\frac{R_k}{2^k}(\varphi+2\pi m)\right|
+  =\left|m+\frac{\varphi}{2\pi}\right|.
+\end{equation}
+另一方面，初始的一盏灯到 $P$ 的距离为 $2R_0\sin(\varphi/2)$，所以总亮度始终为
+\begin{equation}
+  f_0=\frac{1}{\left(2R_0\sin(\varphi/2)\right)^2}
+  =\frac{\pi^2}{\sin^2(\varphi/2)}.
+\end{equation}
+于是极限给出 Wästlund 恒等式
+\begin{equation}
+  \sum_{m=-\infty}^{\infty}\frac{1}{\left(m+x\right)^2}
+  =\frac{\pi^2}{\sin^2(\pi x)},
+  \qquad x=\frac{\varphi}{2\pi}.
+  \label{eq:wastlund-identity}
+\end{equation}
+令 $x\to\frac12$，右边等于 $\pi^2$，左边为
+\begin{equation}
+  \sum_{m=-\infty}^{\infty}\frac{1}{\left(m+\frac12\right)^2}
+  =2\sum_{k=0}^{\infty}\frac{1}{\left(k+\frac12\right)^2}
+  =8\sum_{k=0}^{\infty}\frac{1}{(2k+1)^2}.
+\end{equation}
+因此所有正奇数平方的倒数之和为
 \begin{equation}
   1+\frac{1}{9}+\frac{1}{25}+\cdots=\frac{\pi^2}{8}.
   \label{eq:odd}
 \end{equation}
+（严格地说，$x=\frac12$ 时第一次替换会把一盏灯送到切点，出现退化；可取
+$x\to\frac12$ 的极限。式 \eqref{eq:wastlund-identity} 两边在 $x=\frac12$
+附近都连续，因此结论仍然成立。）
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[scale=0.78, every node/.style={font=\small}]
+  \begin{scope}
+    \draw[thick] (-1.05,0)--(1.05,0);
+    \draw[thick] (0,0.8) circle (0.8);
+    \fill ($(0,0.8)+(120:0.8)$) circle (3pt);
+    \node[below] at (0,-0.08) {$1$ 盏灯};
+  \end{scope}
+
+  \begin{scope}[shift={(3.2,0)}]
+    \draw[thick] (-1.25,0)--(1.25,0);
+    \draw[thick] (0,1.0) circle (1.0);
+    \fill ($(0,1.0)+(60:1.0)$) circle (3pt);
+    \fill ($(0,1.0)+(240:1.0)$) circle (3pt);
+    \node[below] at (0,-0.08) {$2$ 盏灯};
+  \end{scope}
+
+  \begin{scope}[shift={(6.4,0)}]
+    \draw[thick] (-1.45,0)--(1.45,0);
+    \draw[thick] (0,1.2) circle (1.2);
+    \fill ($(0,1.2)+(30:1.2)$) circle (3pt);
+    \fill ($(0,1.2)+(120:1.2)$) circle (3pt);
+    \fill ($(0,1.2)+(210:1.2)$) circle (3pt);
+    \fill ($(0,1.2)+(300:1.2)$) circle (3pt);
+    \node[below] at (0,-0.08) {$4$ 盏灯};
+  \end{scope}
+
+  \draw[->,thick] (8.2,0.8)--(9.4,0.8);
+
+  \begin{scope}[shift={(10.1,0)}]
+    \draw[thick] (0,0)--(3.0,0);
+    \foreach \x in {0.4,0.9,1.4,1.9,2.4}
+      \fill (\x,0) circle (3pt);
+    \node[below] at (1.5,-0.08) {极限：半整数点};
+  \end{scope}
+\end{tikzpicture}
+\caption{半径与灯数同步翻倍，灯点保持等角间隔；圆在切点附近越来越接近直线，
+极限时得到半整数点。}
+\label{fig:doubling-limit}
+\end{figure}
+
+\subsection{回到巴塞尔问题}
 
 设原级数为 $S$。偶数项之和为
 \begin{equation}

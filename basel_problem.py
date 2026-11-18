@@ -10,6 +10,10 @@
     uv run ./basel_problem.py
     uv run ./basel_problem.py --list
     uv run ./basel_problem.py --chapters intro
+    uv run ./basel_problem.py --segments geometry_light,geometry_circle
+
+多屏章节（fourier、geometry）按「一屏一个子片段」拆分，每段单独配音与合并，
+再在章节内拼接，避免整章音视频内部不同步。
 """
 
 import argparse
@@ -22,7 +26,7 @@ from pathlib import Path
 
 from manim import config
 
-from scenes import CHAPTER_NUMBERS, SCENES
+from scenes import CHAPTER_NUMBERS, CHAPTERS, SCENES
 
 config.disable_caching = False
 config.save_last_frame = False
@@ -41,6 +45,7 @@ TEMP_DIR.mkdir(exist_ok=True)
 OUTPUT_DIR.mkdir(exist_ok=True)
 config.media_dir = str(TEMP_DIR / "manim_media")
 SPEC_PATH = BASE_DIR / "specs.md"
+SCENE_MAP = dict(SCENES)
 
 
 def load_script_segments(spec_path: Path) -> dict[str, str]:
@@ -248,22 +253,47 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="生成巴塞尔问题分章科普视频")
     parser.add_argument(
         "--chapters",
-        help="只生成指定章节，逗号分隔，例如：intro,history",
+        help="只生成指定章节，逗号分隔，例如：intro,history,fourier",
+    )
+    parser.add_argument(
+        "--segments",
+        help="只生成指定子片段，逗号分隔，例如：fourier_series,fourier_result",
     )
     parser.add_argument(
         "--list",
         action="store_true",
-        help="列出全部章节后退出",
+        help="列出全部章节和子片段后退出",
     )
     return parser.parse_args()
 
 
+async def render_segment(segment_key: str, segment_dir: Path) -> Path:
+    """渲染一个子片段，返回带音频的 merged.mp4。"""
+    segment_dir.mkdir(parents=True, exist_ok=True)
+    print(f"\n处理片段: {segment_key}")
+
+    video_path = segment_dir / "silent.mp4"
+    scene = SCENE_MAP[segment_key]()
+    scene.render()
+    rendered = scene.renderer.file_writer.movie_file_path
+    shutil.move(rendered, video_path)
+    print(f"无声视频: {video_path}")
+
+    audio_path = await generate_audio_segment(segment_key, segment_dir)
+    print(f"语音文件: {audio_path}")
+
+    merged_path = segment_dir / "merged.mp4"
+    if not merge_video_audio_with_ffmpeg(video_path, audio_path, merged_path):
+        sys.exit(1)
+    return merged_path
+
+
 async def main() -> None:
     args = parse_args()
-    scene_map = dict(SCENES)
+    chapter_map = {key: (number, segments) for key, number, segments in CHAPTERS}
 
     missing = [key for key, _ in SCENES if key not in SCRIPT_SEGMENTS]
-    unused = [key for key in SCRIPT_SEGMENTS if key not in scene_map]
+    unused = [key for key in SCRIPT_SEGMENTS if key not in SCENE_MAP]
     if missing or unused:
         details = []
         if missing:
@@ -273,52 +303,90 @@ async def main() -> None:
         raise SystemExit("\n".join(details))
 
     if args.list:
-        for key, _ in SCENES:
-            print(f"{chapter_dir_name(key)}: {SCRIPT_SEGMENTS[key]}")
+        for chapter_key, number, segments in CHAPTERS:
+            print(f"{number:03d}-{chapter_key}:")
+            for segment_key in segments:
+                print(f"  {segment_key}: {SCRIPT_SEGMENTS[segment_key]}")
         return
 
-    if args.chapters:
-        requested = [key.strip() for key in args.chapters.split(",") if key.strip()]
-        unknown = [key for key in requested if key not in scene_map]
-        if unknown:
-            raise SystemExit(
-                f"未知章节: {', '.join(unknown)}\n可用章节: {', '.join(scene_map)}"
-            )
-        selected = [(key, scene_map[key]) for key in requested]
-    else:
-        selected = SCENES
+    if args.chapters and args.segments:
+        raise SystemExit("--chapters 与 --segments 不能同时使用")
 
     if not shutil.which("ffmpeg"):
         print("未找到 ffmpeg，请先安装 ffmpeg")
         sys.exit(1)
 
+    if args.segments:
+        requested = [key.strip() for key in args.segments.split(",") if key.strip()]
+        unknown = [key for key in requested if key not in SCENE_MAP]
+        if unknown:
+            raise SystemExit(
+                f"未知子片段: {', '.join(unknown)}\n可用子片段: {', '.join(SCENE_MAP)}"
+            )
+        requested_set = set(requested)
+        TEMP_DIR.mkdir(exist_ok=True)
+        final_clips: list[Path] = []
+        for chapter_key, _, segments in CHAPTERS:
+            for index, segment_key in enumerate(segments, start=1):
+                if segment_key not in requested_set:
+                    continue
+                segment_dir = (
+                    TEMP_DIR
+                    / "chapters"
+                    / chapter_dir_name(chapter_key)
+                    / "segments"
+                    / f"{index:02d}-{segment_key}"
+                )
+                shutil.rmtree(segment_dir, ignore_errors=True)
+                final_clips.append(await render_segment(segment_key, segment_dir))
+        print("\n子片段已生成，未写入 output：")
+        for clip in final_clips:
+            print(f"  {clip}")
+        return
+
     if args.chapters:
+        requested = [key.strip() for key in args.chapters.split(",") if key.strip()]
+        unknown = [key for key in requested if key not in chapter_map]
+        if unknown:
+            raise SystemExit(
+                f"未知章节: {', '.join(unknown)}\n可用章节: {', '.join(chapter_map)}"
+            )
+        selected = [
+            (chapter_key, segments)
+            for chapter_key, _, segments in CHAPTERS
+            if chapter_key in requested
+        ]
         TEMP_DIR.mkdir(exist_ok=True)
     else:
+        selected = [
+            (chapter_key, segments) for chapter_key, _, segments in CHAPTERS
+        ]
         reset_temp_dir()
+
     final_clips: list[Path] = []
-
-    for key, scene_class in selected:
-        print(f"\n处理片段: {chapter_dir_name(key)}")
-
-        chapter_dir = TEMP_DIR / "chapters" / chapter_dir_name(key)
+    for chapter_key, segments in selected:
+        print(f"\n处理章节: {chapter_dir_name(chapter_key)}")
+        chapter_dir = TEMP_DIR / "chapters" / chapter_dir_name(chapter_key)
         shutil.rmtree(chapter_dir, ignore_errors=True)
         chapter_dir.mkdir(parents=True, exist_ok=True)
 
-        video_path = chapter_dir / "silent.mp4"
-        scene = scene_class()
-        scene.render()
-        rendered = scene.renderer.file_writer.movie_file_path
-        shutil.move(rendered, video_path)
-        print(f"无声视频: {video_path}")
+        segment_clips: list[Path] = []
+        for index, segment_key in enumerate(segments, start=1):
+            if len(segments) == 1 and segment_key == chapter_key:
+                segment_dir = chapter_dir
+            else:
+                segment_dir = (
+                    chapter_dir / "segments" / f"{index:02d}-{segment_key}"
+                )
+            segment_clips.append(await render_segment(segment_key, segment_dir))
 
-        audio_path = await generate_audio_segment(key, chapter_dir)
-        print(f"语音文件: {audio_path}")
-
-        merged_path = chapter_dir / "merged.mp4"
-        if not merge_video_audio_with_ffmpeg(video_path, audio_path, merged_path):
-            sys.exit(1)
-        final_clips.append(merged_path)
+        if len(segment_clips) == 1:
+            chapter_clip = segment_clips[0]
+        else:
+            chapter_clip = chapter_dir / "merged.mp4"
+            concatenate_videos(segment_clips, chapter_clip)
+            print(f"章节合并完成: {chapter_clip}")
+        final_clips.append(chapter_clip)
 
     if args.chapters:
         print("\n章节已生成，未写入 output：")
