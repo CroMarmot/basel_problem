@@ -131,17 +131,33 @@ $$
 
 **旁白**
 
-欧拉的推导当时还不够严格。后来可以用傅里叶级数给出严格证明。把函数 x 在负派到派上展开成正弦级数，再用帕塞瓦尔等式，右边恰好出现所有 n 平方分之一的和，左边是积分，于是同样得到六分之派的平方。
+用傅里叶级数和帕塞瓦尔等式，把函数 x 在负派到派上展开，同样得到六分之派的平方。
 
 **画面**
 
-写出 $x$ 的正弦级数，并用帕塞瓦尔等式连接
+标题为「傅里叶级数与帕塞瓦尔等式」，下一行英文为「Fourier Series · Parseval's Identity」。
+
+画面等分为左右两半。左侧列出帕塞瓦尔等式，不证明，只写条件和完整形式：
 
 $$
-\sum_{n=1}^{\infty}\frac{1}{n^2}
-\quad\text{与}\quad
-\frac{1}{\pi}\int_{-\pi}^{\pi}x^2\,dx.
+f(x)\sim\frac{a_0}{2}
++\sum_{n=1}^{\infty}\left(a_n\cos(nx)+b_n\sin(nx)\right),
 $$
+
+$$
+\frac{1}{\pi}\int_{-\pi}^{\pi}f(x)^2\,dx
+=\frac{a_0^2}{2}
++\sum_{n=1}^{\infty}\left(a_n^2+b_n^2\right).
+$$
+
+条件是 $f$ 在 $[-\pi,\pi]$ 上平方可积。右侧只列四行：
+
+1. $f(x)=x,\quad -\pi<x<\pi$；
+2. $f(x)=x=2\sum_{n=1}^{\infty}\frac{(-1)^{n+1}}{n}\sin(nx)$；
+3. $\frac{1}{\pi}\int_{-\pi}^{\pi}x^2\,dx=\sum_{n=1}^{\infty}\left(\frac{2}{n}\right)^2$；
+4. $\sum_{n=1}^{\infty}\frac{1}{n^2}=\frac{\pi^2}{6}$。
+
+不再写出 $=4\sum 1/n^2$、积分值等中间计算。全画面只用白色，不使用强调色。
 
 ### geometry
 

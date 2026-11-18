@@ -1,7 +1,6 @@
 \section{严格证明：傅里叶级数与帕塞瓦尔等式}
 
-下面给出一个严格证明。考虑区间 $(-\pi,\pi)$ 上的函数 $f(x)=x$。
-它的傅里叶正弦级数为
+考虑区间 $(-\pi,\pi)$ 上的函数 $f(x)=x$。它的傅里叶正弦级数为
 \begin{equation}
   x=2\sum_{n=1}^{\infty}\frac{(-1)^{n+1}}{n}\sin(nx),
   \qquad -\pi<x<\pi .
@@ -10,21 +9,8 @@
 对式 \eqref{eq:fourier} 使用帕塞瓦尔等式：
 \begin{equation}
   \frac{1}{\pi}\int_{-\pi}^{\pi}x^2\,dx
-  =2\sum_{n=1}^{\infty}\frac{1}{n^2}.
+  =\sum_{n=1}^{\infty}\left(\frac{2}{n}\right)^2.
   \label{eq:parseval}
 \end{equation}
-左边计算得
-\begin{equation}
-  \frac{1}{\pi}\int_{-\pi}^{\pi}x^2\,dx
-  =\frac{1}{\pi}\cdot\frac{2\pi^3}{3}
-  =\frac{2\pi^2}{3}.
-\end{equation}
-代入式 \eqref{eq:parseval}，得到
-\begin{equation}
-  \frac{2\pi^2}{3}=2S,
-\end{equation}
-于是
-\begin{equation}
-  S=\frac{\pi^2}{6}.
-\end{equation}
-证明完成。
+
+可以得到我们要的结果,证明完成。

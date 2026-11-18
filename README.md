@@ -83,7 +83,7 @@ basel-problem/
 │   ├── history.py            # 002 从蒙戈利到欧拉
 │   ├── convergence.py        # 003 收敛性
 │   ├── euler.py              # 004 欧拉的无穷乘积
-│   ├── fourier.py            # 006 傅里叶级数
+│   ├── fourier.py            # 005 傅里叶级数与帕塞瓦尔等式
 │   └── geometry.py           # 007 Wästlund 几何证明
 ├── paper/
 │   ├── basel_problem_paper.tex

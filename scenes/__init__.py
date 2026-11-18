@@ -19,7 +19,7 @@ CHAPTER_NUMBERS = {
     "history": 2,
     "convergence": 3,
     "euler": 4,
-    "fourier": 6,
+    "fourier": 5,
     "geometry": 7,
 }
 
