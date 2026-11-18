@@ -82,7 +82,7 @@ basel-problem/
 │   ├── intro.py              # 001 巴塞尔问题
 │   ├── history.py            # 002 从蒙戈利到欧拉
 │   ├── convergence.py        # 003 收敛性
-│   ├── euler.py              # 005 欧拉的无穷乘积
+│   ├── euler.py              # 004 欧拉的无穷乘积
 │   ├── fourier.py            # 006 傅里叶级数
 │   └── geometry.py           # 007 Wästlund 几何证明
 ├── paper/
