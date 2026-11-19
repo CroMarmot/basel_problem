@@ -30,3 +30,64 @@ Wästlund 的证明没有用到极限运算，也没有用到复分析，它只�
 $\pi$ 出现在这里并非巧合：圆提供了一次方（弧长与圆周角），反比定律在二维面积上提供了
 二次方，两者相乘便得到平方倒数和。几何证明的价值不在简洁，而在于它说明这个常数
 本来就被一个发光圆形的构型所决定。
+
+\subsection{直接读出 $S$：每翻一倍只补一盏灯}
+
+上面第四步是整个构造里唯一的代数：几何只交出奇数项之和，$S$ 还要靠「偶数项是它的
+$\frac14$」才解得出来。把第 5.4 节的翻倍过程稍加改动，就能让 $S$ 直接从图上读出来，
+代价是每一轮在 $P$ 的正对面补上一盏灯。
+
+仍用第 5.5 节的尺度：第 $k$ 轮的圆周长 $C=2^{k+1}$，半径 $\frac{2^{k}}{\pi}$，
+灯落在弧距 $s=1,2,\dots,C-1$ 的位置上，弧长间隔正好是 $1$。翻倍到周长 $2C$ 的大圆时，
+第 5.4 节的替换把弧距 $s$ 的灯换成大圆上弧距 $s$ 与 $s+C$ 的两盏，亮度不变。
+于是新圆上除弧距 $C$ 以外的每个整数位置都有灯，而 $C$ 恰是大圆上 $P$ 的正对面：
+要得到它，只有让一盏灯落在 $P$ 自己身上，这永远做不到。所以每翻一倍恰好缺一个灯位，
+补一盏就够，补的总是正对面那一盏。
+
+补上的灯在第 $k$ 轮圆的直径另一端，到 $P$ 的距离是 $\frac{2^{k+1}}{\pi}$，
+按式 \eqref{eq:inverse-square} 贡献亮度 $\frac{\pi^{2}}{2^{2k+2}}$。
+把各轮补的灯加起来，$P$ 点的总亮度是等比级数
+\begin{equation}
+  B=\sum_{k=0}^{\infty}\frac{\pi^{2}}{4^{k+1}}
+   =\frac{\pi^{2}}{4}\cdot\frac{1}{1-\frac14}
+   =\frac{\pi^{2}}{3}.
+  \label{eq:supplement-brightness}
+\end{equation}
+另一方面，半径趋于无穷时圆压成过 $P$ 的直线，弦长趋于弧长，灯落在全体非零整数处，
+到 $P$ 的距离依次是 $1,2,3,\dots$（图 \ref{fig:onepic}）。同一点亮度因此是
+\begin{equation}
+  B=\sum_{n\neq 0}\frac{1}{n^{2}}=2\sum_{n=1}^{\infty}\frac{1}{n^{2}}=2S.
+  \label{eq:supplement-line}
+\end{equation}
+两式相等，即 $2S=\frac{\pi^{2}}{3}$，也就是 $S=\frac{\pi^{2}}{6}$。
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=0.55, every node/.style={font=\small}]
+  \coordinate (P) at (0,0);
+  \draw[thick] (0,0.6) circle (0.6);
+  \draw[thick] (0,1.2) circle (1.2);
+  \draw[thick] (0,2.4) circle (2.4);
+  \draw[thin,dashed] (0,0)--(0,5.1);
+  \foreach \s [evaluate=\s as \ang using {180*\s/4-90}] in {1,2,3,5,6,7}
+    \fill[lampB] (0,2.4)+(\ang:2.4) circle (2.8pt);
+  \fill[lampA] (0,1.2) circle (3.2pt);
+  \fill[lampA] (0,2.4) circle (3.2pt);
+  \fill[lampA] (0,4.8) circle (3.2pt);
+  \draw[thick] (-3.6,0)--(3.6,0);
+  \foreach \x/\lab in {-2.8/-4,-2.1/-3,-1.4/-2,-0.7/-1,0.7/1,1.4/2,2.1/3,2.8/4} {
+    \fill[lampB] (\x,0) circle (2.8pt);
+    \node[below,font=\footnotesize] at (\x,-0.05) {$\lab$};
+  }
+  \fill (P) circle (1.8pt);
+  \node[above left] at (P) {$P$};
+\end{tikzpicture}
+\caption{圆与极限直线在 $P$ 点重合：红色是每翻一倍在正对面补上的那盏灯，
+蓝色是分裂而来的灯位；极限下直线的每个整数点都亮着。}
+\label{fig:onepic}
+\end{figure}
+
+这条路线与第 5.5、5.6 节的区别只在一点：那里每轮做纯等效替换，总亮度守恒，
+极限下读出的是奇数项之和；这里让亮度逐轮累加，代价是每轮补一盏灯，换来的却是
+$\sum\frac{1}{n^{2}}$ 本身出现在图上。它和第 4 节帕塞瓦尔等式给出的是同一个级数，
+只是这里的每一项都能指着一盏灯说出来。
