@@ -1,0 +1,58 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{geometry}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{calc}
+\usepackage{float}
+\usepackage[colorlinks=true,linkcolor=blue,urlcolor=blue,citecolor=blue]{hyperref}
+
+\geometry{margin=2.4cm}
+
+\definecolor{lampA}{RGB}{198,43,42}
+\definecolor{lampB}{RGB}{44,93,197}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+
+\title{One More Step on W\"astlund's Geometric Proof of the Basel Problem}
+\author{YeXiaoRain\thanks{Independent researcher, Chengdu, Sichuan, China.
+  \texttt{yexiaorain@gmail.com}}}
+\date{November 20, 2026}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+W\"astlund's geometric proof of the Basel problem doubles a circle again and again and
+replaces each lamp by two equivalent ones, so that the brightness at the observation point
+never changes; in the limit the figure yields the sum of the reciprocal squares of the
+\emph{odd} integers, and one further algebraic step is needed to reach the full series.
+We modify the doubling by adding a single lamp at the point of the new circle antipodal to
+the observer. That position is precisely the one the replacement cannot produce, so exactly
+one lamp is missing each round; the added lamps stand at distances that double every time,
+so their contributions form a geometric series, while the limiting line carries a lamp at
+every nonzero integer point. Equating the two brightnesses gives $\sum_{n\ge1}1/n^{2}=\pi^{2}/6$
+directly off the figure, with no detour through the odd terms.
+\end{abstract}
+
+\begin{center}
+\small
+\textbf{MSC 2020:} 51M04 (primary); 40A05, 11A25, 01A50\\[0.3em]
+\textbf{Keywords:} Basel problem; geometric proof; inverse-square law;
+W\"astlund's construction; infinite series
+\end{center}
+
+\input{sections/01-introduction.tex}
+\input{sections/02-wastlund.tex}
+\input{sections/03-one-more-step.tex}
+\input{sections/04-references.tex}
+
+\end{document}

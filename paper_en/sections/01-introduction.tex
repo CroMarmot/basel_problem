@@ -1,0 +1,57 @@
+\section{Introduction}
+
+The Basel problem asks for the sum of the reciprocal squares of the positive integers:
+\begin{equation}
+  S=\sum_{n=1}^{\infty}\frac{1}{n^{2}}
+   =1+\frac{1}{4}+\frac{1}{9}+\frac{1}{16}+\cdots .
+  \label{eq:basel}
+\end{equation}
+Mengoli posed it in 1644 and Euler evaluated the sum in 1735 as $\pi^{2}/6$. The left-hand
+side is built out of integers alone, while the right-hand side is a circle constant, so one
+expects a geometric reading of the identity.
+
+Such a reading was given by W\"astlund \cite{wastlund} in a short note and popularised by
+3Blue1Brown \cite{threeblueonebrown}. It uses nothing beyond Euclidean geometry: circles,
+chords, right angles, and the inverse-square law for light. A lamp on a circle is a point
+source, the common tangent point $P$ of two circles is the observer, and a term $1/d^{2}$ is
+read as the brightness that a lamp at distance $d$ delivers at $P$. Doubling the circle
+replaces every lamp by two equivalent ones on the larger circle, so the total brightness at
+$P$ is preserved; in the limit the circle flattens into a line and its lamps fall on the odd
+integers.
+
+Normalise the construction so that the circle of circumference $2$ carries a single lamp, at
+the point antipodal to $P$, at distance $2/\pi$. What the figure then delivers is the odd
+terms.
+
+\begin{theorem}[W\"astlund]\label{thm:wastlund}
+With the normalisation above, the construction gives
+\begin{equation}
+  \sum_{k=0}^{\infty}\frac{1}{(2k+1)^{2}}=\frac{\pi^{2}}{8}.
+  \label{eq:odd-sum}
+\end{equation}
+\end{theorem}
+
+Getting $S$ out of Theorem \ref{thm:wastlund} costs one algebraic remark: the even terms are
+$\frac14 S$, so $\frac34 S=\frac{\pi^{2}}{8}$. That remark is the only non-geometric step in
+the whole argument, and it is the step this note removes.
+
+\begin{theorem}[this note]\label{thm:direct}
+Modify the doubling as follows: at every round, after the lamps have been replaced by their
+images on the larger circle, add one lamp at the point of that circle antipodal to $P$. Then
+every nonzero integer point of the limiting line carries a lamp, the brightness they deliver
+at $P$ equals the brightness of the added lamps, and
+\begin{equation}
+  2S=\sum_{k=0}^{\infty}\frac{\pi^{2}}{4^{k+1}}=\frac{\pi^{2}}{3},
+  \qquad\text{so}\qquad
+  S=\frac{\pi^{2}}{6}.
+  \label{eq:direct}
+\end{equation}
+\end{theorem}
+
+Only one lamp has to be added each round, and it always sits in the same place: the antipodal
+position is exactly the one the replacement cannot produce, since its preimage would be a lamp
+at $P$ itself. Every other integer position is filled exactly once.
+
+Section \ref{sec:wastlund} reproduces W\"astlund's proof; Section \ref{sec:one-more-step}
+contains the modification and the proof of Theorem \ref{thm:direct}, which is the only new
+content of this note.
