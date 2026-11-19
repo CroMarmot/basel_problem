@@ -23,6 +23,7 @@ from manim import (
     Polygon,
     Scene,
     SurroundingRectangle,
+    Text,
     VGroup,
     Write,
 )
@@ -570,13 +571,14 @@ class BaselGeometryOnePic(BaselGeometryDirect):
         # 旁白：最后把整条路线收进一张图
         self.play(FadeIn(title[1]), run_time=0.8)
         self.wait(0.7)
-        self.play(FadeIn(circles), FadeIn(kids), run_time=1.4)
-        self.wait(0.6)
 
-        # 旁白：每次把圆翻倍时，在 P 的正对面补上一盏灯
-        self.wait(1.9)
-        self.play(FadeIn(added), run_time=1.2)
-        self.wait(1.2)
+        # 圆可以一次画完，灯却必须按构造顺序出现：补一盏青灯 → 翻倍映射出下一层圆上的黄灯 → 再补一盏。
+        self.play(FadeIn(circles), run_time=1.2)
+        for k in range(self.STAGES):
+            self.play(FadeIn(added[k]), run_time=0.5)
+            if k + 1 < self.STAGES:
+                self.play(FadeIn(kids[k + 1]), run_time=0.5)
+        self.wait(0.6)
 
         # 旁白：周长无限翻倍之后
         self.play(Create(guide), run_time=1.2)
@@ -611,3 +613,49 @@ class BaselGeometryOnePic(BaselGeometryDirect):
         # 旁白：从而算出了答案
         self.play(Write(formula[6]), run_time=1.2)
         self.wait(1.1)
+
+
+class BaselGeometryRefs(Scene):
+    """007-05：片尾只列两条参考链接，几何证明原文与科普讲解。"""
+
+    ENTRIES = [
+        ("几何证明原文", "https://www.math.chalmers.se/~wastlund/Cosmic.pdf", "2010-12-08"),
+        ("科普讲解视频", "https://www.youtube.com/watch?v=d-o3eB9sfls", "2018-03-03"),
+    ]
+    URL_FONT = "DejaVu Sans Mono"
+    URL_SIZE = 24
+
+    def build_rows(self) -> VGroup:
+        rows = VGroup()
+        for label, url, date in self.ENTRIES:
+            link = Text(url, font=self.URL_FONT, font_size=self.URL_SIZE, color=WHITE)
+            when = Text(
+                date, font=self.URL_FONT, font_size=self.URL_SIZE, color=WHITE
+            ).set_opacity(0.6)
+            urls = VGroup(link, when).arrange(RIGHT, buff=0.7)
+            rows.add(
+                VGroup(cn(label, 0.5), urls).arrange(DOWN, aligned_edge=LEFT, buff=0.24)
+            )
+        rows.arrange(DOWN, aligned_edge=LEFT, buff=0.9)
+        rows.move_to(DOWN * 0.35)
+        return rows
+
+    def construct(self):
+        title = screen_title("参考链接", "Basel Problem · References")
+        rows = self.build_rows()
+
+        self.play(FadeIn(title[0]), FadeIn(title[1]), run_time=0.9)
+        self.wait(1.7)
+        # 每条链接：先题名，再出地址，念到日期时日期才落下来。
+        first, second = rows
+        self.play(FadeIn(first[0]), run_time=0.6)
+        self.play(FadeIn(first[1][0]), run_time=1.6)
+        self.wait(1.4)
+        self.play(FadeIn(first[1][1]), run_time=0.8)
+        self.wait(1.4)
+        self.play(FadeIn(second[0]), run_time=0.6)
+        self.play(FadeIn(second[1][0]), run_time=1.6)
+        self.wait(1.8)
+        self.play(FadeIn(second[1][1]), run_time=0.8)
+        self.wait(1.2)
+        self.wait(0.8)

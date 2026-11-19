@@ -15,6 +15,7 @@ from .summary import (
     BaselGeometryDirect,
     BaselGeometryOnePic,
     BaselGeometryQuestion,
+    BaselGeometryRefs,
     BaselGeometrySummary,
 )
 
@@ -34,6 +35,7 @@ SCENES = [
     ("geometry_question", BaselGeometryQuestion),
     ("geometry_direct", BaselGeometryDirect),
     ("geometry_onepic", BaselGeometryOnePic),
+    ("geometry_refs", BaselGeometryRefs),
 ]
 
 CHAPTERS = [
@@ -53,7 +55,13 @@ CHAPTERS = [
     (
         "summary",
         7,
-        ["geometry_summary", "geometry_question", "geometry_direct", "geometry_onepic"],
+        [
+            "geometry_summary",
+            "geometry_question",
+            "geometry_direct",
+            "geometry_onepic",
+            "geometry_refs",
+        ],
     ),
 ]
 
