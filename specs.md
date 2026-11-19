@@ -27,7 +27,7 @@
 
 - 最终视频：`output/basel_problem_final.mp4`，只在完整运行时生成。
 - 单章测试：`temp/chapters/<三位编号>-<章节名>/merged-<chash>.mp4`，不写入 `output/`。
-- 论文：`output/basel_problem_paper.pdf`
+- 论文：`output/basel_problem_paper.pdf`（中文，XeLaTeX）、`output/basel_problem_paper_en.pdf`（英文，pdfLaTeX，投 arXiv）
 - 中间产物：`temp/chapters/<三位编号>-<章节名>/silent-<vhash>.mp4`、`<章节名>-<ahash>.mp3`、`merged-<mhash>.mp4`
 - 一屏一个子片段：多屏章节拆成若干片段后，产物放在 `temp/chapters/<三位编号>-<章节名>/segments/<两位序号>-<片段名>/`，章节内按序号拼接。每屏的动画与旁白单独配音、单独补齐，避免整章内部音画漂移。
 - 文件名里的 `<vhash>`/`<ahash>`/`<mhash>`/`<chash>` 都是内容指纹（xxhash），算法见「技术约束」；同目录下指纹过期的旧产物会被删掉，每种成品只留当前那一份。
@@ -311,10 +311,11 @@ $$
 
 几何章整体只用一种强调色（黄色）标注灯点与最终结果，其余保持白色；
 只有总结章的第 3、4 屏（`geometry_direct`、`geometry_onepic`）额外用青色 `EXTRA` 标出每轮补上的那盏灯。
-006 的六屏主标题都是「Wästlund 的几何证明」，副标题写这一屏在讲什么；007 的四屏共用同一句主标题
+006 的六屏主标题都是「Wästlund 的几何证明」，副标题写这一屏在讲什么；007 的前四屏共用同一句主标题
 「在 Wästlund 的几何图上再多走一步」，只有副标题随屏变化——前两只留问号（还没回答），
 后两屏换成黄色的对勾（`screen_title(..., mark="✓")` 单独把 ✓ 染黄）。主标题既然四屏一致，
 就不再逐屏重绘：从第 2 屏 `geometry_question` 起的三屏都用 `self.add(title[0])` 让主标题常驻，只淡入副标题。
+第 5 屏 `geometry_refs` 是片尾的参考链接卡，另起一句标题，不参与上面这套共用标题。
 
 ### geometry_question
 
@@ -409,28 +410,65 @@ $\Bigr)$ 白色，末段 $=\ \frac{\pi^2}{6}$ 黄色。括号用 `\Bigl(`/`\Bigr
 因为左右括号分属两段。中间那步 $\frac12\cdot\frac{\pi^2}{4}\cdot\frac{1}{1-1/4}$ 不写：
 这一屏只讲「从图上直接读出来」，等比求和的细节留给上一屏。
 
-全屏没有任何灯点闪烁高亮（不用 `Indicate`），原有灯、补灯、极限直线上的整数灯一次淡入后
-就靠颜色区分：黄色继承灯、青色补灯、青色等比式各项。
+全屏没有任何灯点闪烁高亮（不用 `Indicate`），只靠淡入与颜色区分：黄色继承灯、青色补灯、青色等比式各项。
+**圆可以一次画完，灯不行**：这张图要讲的过程是「补一盏青灯 → 翻倍映射出下一层圆上的黄灯 → 再补一盏」
+的循环，所以灯从最小的圆起逐轮淡入，每轮先青后黄、各 0.5 秒，五轮走完才满图是灯。
 
 旁白 20.42 秒，视频 21.40 秒。动作按句子落点：
 
 | 旁白 | 结束 | 画面动作 |
 | --- | --- | --- |
 | 最后把整条路线收进一张图 | 3.2 | 主标题常驻，只淡入副标题（0.8） |
-| 每次把圆翻倍时 | 5.3 | 五个圆与其上的继承灯一起淡入（2.9） |
-| 在 P 的正对面补上一盏灯 | 7.7 | 五盏青色补灯淡入（6.6） |
+| 每次把圆翻倍时 | 5.3 | 五个圆一次淡入（2.7），接着补下第一盏青灯（3.2） |
+| 在 P 的正对面补上一盏灯 | 7.7 | 「青灯 → 下一层黄灯」循环走完五轮（7.2） |
 | 周长无限翻倍之后 | 10.0 | 画出过 $P$ 的竖直虚线（9.0） |
 | 圆压成过 P 的那条直线 | 12.0 | 画出直线与 $P$（11.4） |
 | 整数点上全是灯 | 13.9 | $\pm1$ 到 $\pm7$ 依次点灯并标整数（13.5） |
 | 我们就直接从几何上得到了 S 的等比数列求值表达式 | 18.8 | 逐段写出 $S=\frac12($ 与四个青色项及 $\cdots$（14.9、15.7、16.5、17.3、18.1、18.8） |
 | 从而算出了答案 | 20.42 | 写出黄色的 $=\ \frac{\pi^2}{6}$（20.3），停在成品画面上（21.40） |
 
+### geometry_refs
+
+**画面**（`007-summary` 的第 5 屏，片尾卡）
+
+标题「参考链接」＋副标题「Basel Problem · References」。这一屏是片尾卡，**不沿用** 007 前四屏那句主标题。
+正文只有两组，左对齐自上而下，每组三件东西：题名、地址、日期。
+
+1. 「几何证明原文」`https://www.math.chalmers.se/~wastlund/Cosmic.pdf` `2010-12-08`；
+2. 「科普讲解视频」`https://www.youtube.com/watch?v=d-o3eB9sfls` `2018-03-03`。
+
+题名走 `cn(..., 0.5)` 白字；地址与日期用 `DejaVu Sans Mono` 24pt——最宽的一行 12.44，居中后左右各留约 0.9，
+再大就要出画。日期排在地址右边（`buff=0.7`）并压到 0.6 透明度当灰字。全屏只有白色，不用强调色。
+旁白念到日期时日期才淡入，所以每组的节奏固定是「题名 → 地址 → 灰日期」。旁白 14.38 秒，视频 15.20 秒。
+
 
 ## 论文结构
 
+### 中文版（`paper/`）
+
 XeLaTeX + fontspec + Noto CJK，A4，正文按章拆在 `paper/sections/`，由入口
 `paper/basel_problem_paper.tex` 顺序 `\input`；`paper/build.py` 跑两遍并检查字体与
-`Missing character`。成品 `output/basel_problem_paper.pdf`，**目前 6 页**（标题页含摘要与目录）。
+`Missing character`。成品 `output/basel_problem_paper.pdf`，**目前 7 页**（标题页含摘要、MSC/关键词与目录）。
+标题页署名 YeXiaoRain（独立研究者，四川成都），日期写死 2026 年 11 月 20 日，
+摘要末尾一句点出本文自己的贡献在 6.2，正文第 1 节末尾同样声明「本文只有 6.2 是新的」，
+文末有 `\section*{致谢}` 感谢 Wästlund 与 3Blue1Brown。
+
+### 英文版（`paper_en/`，投 arXiv 用）
+
+**必须用 pdfLaTeX**：arXiv 的 TeXLive 里没有 Noto CJK，中文版原样上传会构建失败。
+`paper_en/basel_problem_paper_en.tex` + `paper_en/sections/` + `paper_en/build.py`
+（pdflatex 两遍，检查未定义引用与缺字），成品 `output/basel_problem_paper_en.pdf`，**目前 5 页 A4**。
+标题 `One More Step on Wästlund's Geometric Proof of the Basel Problem`，
+MSC 2020 主 51M04、次 40A05/11A25/01A50，关键词五个。
+英文版**只保留几何路线**：`01-introduction.tex`（问题、贡献声明、Theorem 1.1 Wästlund 与
+Theorem 1.2 本文）、`02-wastlund.tex`（六小节，全部改写进 `lemma/proof` 环境：Definition 2.1 灯/亮度/等效/正对面、
+反勾股、等亮度替换、翻倍、极限、回到巴塞尔）、`03-one-more-step.tex`（缺位引理、补灯亮度命题、
+Theorem 1.2 的证明、一张图的静图、致谢）、`04-references.tex`（只剩 Wästlund 与 3Blue1Brown 两条，
+Euler/Ahlfors/Apostol 已删）。收敛性、欧拉乘积、傅里叶三节在英文版里暂时不译——是否最终去掉待确认。
+两版共用同一套 TikZ 图与同一尺度约定。
+Wästlund 条目的著录信息按 PDF 首页核对过：题名小写 `Summing inverse squares by euclidean geometry`，
+Chalmers University of Technology，2010-12-08，未刊文稿；arXiv 上检索不到这篇（Wästlund 名下 23 条无 Basel 相关），
+所以只能引 Chalmers 的 URL。3Blue1Brown 条目按 YouTube 页面写 2018-03-03。
 
 1. 摘要（写在入口 `.tex` 里，不是独立文件）：问题、三种证明路线各一句。
 2. `01-problem.tex` 问题的提出：级数、历史与意义，含 $\sum 1/n^2$ 与 $\pi^2/6$ 两条公式。
@@ -467,5 +505,6 @@ $S$，不必先求奇数幂次和再靠代数」。007-04 本身没有新的数�
 - 每个子片段内，无声动画总时长略大于旁白（多 0.5～1.1 秒），音频不得长于视频，否则合并会冻住最后一帧。
 - 缓存生效：源码与旁白都没改时，第二次完整运行不进入 Manim 渲染，终端逐段打印「复用整段」，
   最终视频仍按新写入时间出现在 `output/`。
-- `uv run python paper/build.py` 能生成六页 A4 中文 PDF，且日志无 `Missing character`。
+- `uv run python paper/build.py` 能生成七页 A4 中文 PDF，且日志无 `Missing character`。
+- `uv run python paper_en/build.py` 能用 pdfLaTeX 生成五页 A4 英文 PDF，无未定义引用/引文、无缺字。
 - 视频与 PDF 中的中文、公式、数字均正常显示。

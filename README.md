@@ -1,6 +1,6 @@
 # basel-problem
 
-用 Manim + Edge TTS 生成“巴塞尔问题”科普视频，并用 XeLaTeX 生成中文 PDF 论文。
+用 Manim + Edge TTS 生成“巴塞尔问题”科普视频，并用 XeLaTeX 生成中文 PDF 论文、pdfLaTeX 生成英文版（arXiv）。
 
 ## 快速开始
 
@@ -45,6 +45,9 @@ uv run ./basel_problem.py --segments fourier,geometry_circle
 
 # 重建论文 PDF（XeLaTeX 两遍 + 字体与 Missing character 检查）
 uv run python paper/build.py
+
+# 重建英文版论文 PDF（pdfLaTeX 两遍，arXiv 用）
+uv run python paper_en/build.py
 ```
 
 章节 key 与子片段 key 分别来自 `scenes/__init__.py` 的 `CHAPTERS` 和 `SCENES`：
@@ -72,7 +75,7 @@ temp/
             └── merged-<mhash>.mp4      # hash(vhash + ahash)
 ```
 
-例如第一章是 `temp/chapters/001-intro/`，后面的 history 是 `002-history`。数字前缀保证 Ubuntu 文件管理器和各类 IDE 按章节顺序排序。几何章 `006-geometry`、总结章 `007-summary` 按画面拆成多个子片段，章节视频由片段依次拼接而成；`005-fourier` 只有一屏。按章节生成时，只有 `intro`、`fourier` 这类章节 key 与子片段 key 相同的情况下，产物才直接放在章节目录里（`--segments` 则一律放在 `segments/NN-<片段名>/` 下）；`007-summary` 的四屏仍然走 `segments/01-geometry_summary/`、`segments/02-geometry_question/`、`segments/03-geometry_direct/`、`segments/04-geometry_onepic/`。
+例如第一章是 `temp/chapters/001-intro/`，后面的 history 是 `002-history`。数字前缀保证 Ubuntu 文件管理器和各类 IDE 按章节顺序排序。几何章 `006-geometry`、总结章 `007-summary` 按画面拆成多个子片段，章节视频由片段依次拼接而成；`005-fourier` 只有一屏。按章节生成时，只有 `intro`、`fourier` 这类章节 key 与子片段 key 相同的情况下，产物才直接放在章节目录里（`--segments` 则一律放在 `segments/NN-<片段名>/` 下）；`007-summary` 的五屏仍然走 `segments/01-geometry_summary/`、`segments/02-geometry_question/`、`segments/03-geometry_direct/`、`segments/04-geometry_onepic/`、`segments/05-geometry_refs/`。
 
 只生成指定章节时，只会替换该章节目录，其他章节的中间产物会保留，结果留在 `temp/chapters/` 下，不写入 `output/`。完整运行会重走一遍全部章节，但只重生成指纹变了的产物，最终输出 `output/basel_problem_final.mp4`。`output/` 只保存最终视频和论文 PDF。
 
@@ -109,8 +112,13 @@ uv run ./basel_problem.py --chapters geometry
 最终 PDF 输出到：
 
 ```text
-output/basel_problem_paper.pdf
+output/basel_problem_paper.pdf      # 中文版
+output/basel_problem_paper_en.pdf   # 英文版（arXiv）
 ```
+
+英文版走 `paper_en/build.py`，用 **pdfLaTeX** 而不是 XeLaTeX：arXiv 的 TeXLive 没有 Noto CJK，
+中文源码原样上传会构建失败，所以英文版只收几何路线（Wästlund 的证明 + 本文的补灯一步），
+全篇 ASCII 加 `\` 转音号（`W\"astlund`）。检查项换成未定义引用/引文与缺字。
 
 ### 中文 PDF 乱码问题
 
@@ -146,11 +154,16 @@ basel-problem/
 │   ├── euler.py              # 004 欧拉的无穷乘积
 │   ├── fourier.py            # 005 傅里叶级数与帕塞瓦尔等式（1 屏）
 │   ├── geometry.py           # 006 Wästlund 几何证明（6 屏）
-│   └── summary.py            # 007 几何方法总结（4 屏）
+│   └── summary.py            # 007 几何方法总结（5 屏，末屏是参考链接）
 ├── paper/
 │   ├── basel_problem_paper.tex
 │   ├── build.py              # XeLaTeX 编译脚本
+│   ├── arxiv-en-gaps.md      # 英文版投稿前待确认的结构性缺口（交流用，不进 PDF）
 │   └── sections/             # 按章节拆分的论文正文
+├── paper_en/
+│   ├── basel_problem_paper_en.tex
+│   ├── build.py              # pdfLaTeX 编译脚本（arXiv 可用）
+│   └── sections/             # 英文版正文，只有几何路线
 ├── output/                   # 生成的视频与 PDF（忽略）
 ├── temp/                     # 分章中间产物与 Manim 缓存（忽略）
 ├── pyproject.toml
