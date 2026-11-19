@@ -9,24 +9,11 @@ from manim import (
     Line,
     MathTex,
     Scene,
-    Text,
     VGroup,
     Write,
 )
 
-from .common import CN_FONT
-
-
-def cn(text: str, scale: float = 0.55) -> Text:
-    return Text(text, font=CN_FONT).scale(scale)
-
-
-def heading(title_text: str, subtitle_text: str) -> VGroup:
-    title = cn(title_text, 0.85)
-    title.to_edge(UP, buff=0.45)
-    subtitle = Text(subtitle_text, font_size=22).scale(0.42)
-    subtitle.next_to(title, DOWN, buff=0.1)
-    return VGroup(title, subtitle)
+from .common import cn, screen_title
 
 
 class BaselFourier(Scene):
@@ -68,7 +55,7 @@ class BaselFourier(Scene):
         return series, sub, result
 
     def construct(self):
-        title = heading("傅里叶级数与帕塞瓦尔等式", "Fourier Series and Parseval's Identity")
+        title = screen_title("傅里叶级数与帕塞瓦尔等式", "Fourier Series and Parseval's Identity")
         left = self.build_left()
         header_l, general, condition, parseval, note = left
         series, sub, result = self.build_right()

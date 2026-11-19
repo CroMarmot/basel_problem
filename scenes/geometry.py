@@ -19,25 +19,12 @@ from manim import (
     MathTex,
     Polygon,
     Scene,
-    Text,
     VGroup,
     Write,
     angle_of_vector,
 )
 
-from .common import ACCENT, CN_FONT
-
-
-def cn(text: str, scale: float = 0.55, color=WHITE) -> Text:
-    return Text(text, font=CN_FONT, color=color).scale(scale)
-
-
-def heading(title_text: str, subtitle_text: str) -> VGroup:
-    title = cn(title_text, 0.8)
-    title.to_edge(UP, buff=0.4)
-    subtitle = Text(subtitle_text, font=CN_FONT, font_size=22).scale(0.42)
-    subtitle.next_to(title, DOWN, buff=0.1)
-    return VGroup(title, subtitle)
+from .common import ACCENT, EXTRA, cn, screen_title
 
 
 def star_at(point, color=ACCENT, radius: float = 0.07) -> VGroup:
@@ -106,7 +93,7 @@ class BaselGeometryLight(Scene):
     """屏幕 1：平方反比与亮度。"""
 
     def construct(self):
-        title = heading("几何证明：Wästlund", "用欧几里得几何求平方倒数和")
+        title = screen_title("Wästlund 的几何证明", "平方反比看成接受光照")
 
         source_pt = LEFT * 3.5 + UP * 2.4
         far_points = screen_corners(LEFT * 3.5 + DOWN * 1.9, 2.6, 2.0, 0.26)
@@ -159,7 +146,7 @@ class BaselGeometryPythagoras(Scene):
     """屏幕 2：反勾股定理。"""
 
     def construct(self):
-        title = heading("反勾股定理", "Inverse Pythagorean Theorem")
+        title = screen_title("Wästlund 的几何证明", "反勾股定理")
 
         A = LEFT * 5.9 + DOWN * 1.7
         B = LEFT * 1.5 + DOWN * 1.7
@@ -206,7 +193,7 @@ class BaselGeometryCircle(Scene):
     """屏幕 3：过 R 作 RP 的垂线，把一颗星换成两颗星。"""
 
     def construct(self):
-        title = heading("圆上的替换", "One Star Becomes Two")
+        title = screen_title("Wästlund 的几何证明", "一盏灯换成两盏等效灯")
 
         P = LEFT * 3.3 + DOWN * 2.35
         r1, r2 = 1.2, 2.4
@@ -289,7 +276,7 @@ class BaselGeometryDoubling(Scene):
     """屏幕 4：小圆的 N 等分点逐盏换成大圆上对应的 2N 等分点。"""
 
     def construct(self):
-        title = heading("翻倍与对应", "N Points Become 2N")
+        title = screen_title("Wästlund 的几何证明", "半径翻倍：N 等分换成 2N 等分")
 
         P = LEFT * 3.55 + DOWN * 2.3
         r1, r2 = 1.1, 2.2
@@ -400,7 +387,7 @@ class BaselGeometryLimit(Scene):
     """屏幕 5：周长与灯数同步翻倍，圆在 P 附近趋于直线。"""
 
     def construct(self):
-        title = heading("极限：圆变成直线", "Circles Become a Line")
+        title = screen_title("Wästlund 的几何证明", "极限：圆变成直线")
 
         P = LEFT * 4.4 + DOWN * 3.2
         r0 = 0.3
@@ -652,7 +639,7 @@ class BaselGeometryResult(Scene):
         return arrows, labels
 
     def construct(self):
-        title = heading("回到巴塞尔问题", "Back to Basel")
+        title = screen_title("Wästlund 的几何证明", "回到巴塞尔问题")
 
         grid = MathTex(ODD_EVEN_GRID).scale(0.55)
         row_odd, row_all, row_even, ruler = self.split_rows(grid, 4)

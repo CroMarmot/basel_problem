@@ -1,11 +1,11 @@
-from manim import DOWN, UP, MathTex, Scene, Text, Write
+from manim import DOWN, MathTex, Scene, Write
 
-from .common import ACCENT, CN_FONT
+from .common import ACCENT, screen_title
 
 
 class BaselConvergence(Scene):
     def construct(self):
-        title = Text("先证明它收敛", font=CN_FONT).to_edge(UP)
+        title = screen_title("收敛性")
         derivation = MathTex(
             r"\begin{aligned}"
             r"S&=\sum_{n=1}^{\infty}\frac{1}{n^2}"

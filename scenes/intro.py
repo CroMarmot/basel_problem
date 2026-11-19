@@ -1,16 +1,12 @@
-from manim import DOWN, ORIGIN, RIGHT, UP, FadeIn, MathTex, Scene, Text, VGroup, Write
+from manim import DOWN, ORIGIN, UP, FadeIn, MathTex, Scene, VGroup, Write
 
-from .common import ACCENT, CN_FONT
+from .common import ACCENT, body, screen_title
 
 
 class BaselIntro(Scene):
     def construct(self):
-        title_cn = Text("巴塞尔问题", font=CN_FONT, font_size=64)
-        title_en = Text("Basel Problem", font_size=34)
-        title = VGroup(title_cn, title_en).arrange(
-            RIGHT, buff=0.45, aligned_edge=DOWN
-        )
-        question = Text("所有正整数平方的倒数之和是多少？", font=CN_FONT, font_size=40)
+        title = screen_title("巴塞尔问题", "Basel Problem")
+        question = body("所有正整数平方的倒数之和是多少？")
         equation = MathTex(
             r"S=",
             r"\sum_{n=1}^{\infty}\frac{1}{n^2}",
@@ -20,10 +16,10 @@ class BaselIntro(Scene):
             "?",
         ).scale(0.8)
         equation[-1].set_color(ACCENT)
-        content = VGroup(title, question, equation).arrange(DOWN, buff=0.85)
+        content = VGroup(question, equation).arrange(DOWN, buff=0.95)
         content.move_to(ORIGIN)
 
-        self.play(Write(title), run_time=1.5)
+        self.play(Write(title[0]), FadeIn(title[1]), run_time=1.5)
         self.play(FadeIn(question, shift=UP), run_time=1.5)
         self.play(Write(equation), run_time=2)
         self.wait(1)

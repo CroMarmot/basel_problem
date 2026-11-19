@@ -29,8 +29,8 @@ from pathlib import Path
 
 from PIL import Image
 
-from .common import ACCENT, EXTRA
-from .geometry import chord_through, cn, heading, right_angle_mark, star_at
+from .common import ACCENT, EXTRA, cn, screen_title
+from .geometry import chord_through, right_angle_mark, star_at
 
 THREEB_DIR = Path(__file__).parent / "3b1b"
 # 裁出播放器画面本身（16:9），去掉浏览器页面背景和左右留白。
@@ -40,6 +40,9 @@ SUMMARY_FRAMES = [
     ("sub1", 63, 815, 4, 1341),
     ("sub2", 57, 809, 2, 1334),
 ]
+
+# 007 四屏共用同一句主标题：前两屏以问号收尾，后两屏换成黄色的对勾。
+METHOD_TITLE = "在 Wästlund 的几何图上再多走一步"
 
 SUMMARY_STEPS = [
     ("① 三维点光源用面受光，亮度与距离平方成反比", r"B\propto\frac{1}{r^{2}}"),
@@ -125,7 +128,7 @@ class BaselGeometrySummary(Scene):
         return big, smalls
 
     def construct(self):
-        title = heading("几何方法总结", "Wästlund 的证明 · 四步")
+        title = screen_title(METHOD_TITLE + "？", "几何方法的四步总结")
         steps = self.build_steps()
         big, smalls = self.build_pictures()
 
@@ -197,7 +200,7 @@ class BaselGeometryQuestion(Scene):
         return block
 
     def construct(self):
-        title = heading("一个没被回答的问题", "几何的收尾交给了代数")
+        title = screen_title(METHOD_TITLE + "？", "一个没被回答的问题")
         geometry = self.build_geometry()
         odd = self.build_odd_sum()
         algebra = self.build_algebra()
@@ -214,8 +217,6 @@ class BaselGeometryQuestion(Scene):
         cover.set_stroke(width=2, opacity=0.45)
 
         frame = SurroundingRectangle(geometry, color=WHITE, buff=0.2, stroke_width=2)
-        step_note = cn("只是重新整理了一遍", 0.36).set_opacity(0.6)
-        step_note.next_to(frame, DOWN, buff=0.3)
         same_note = cn(
             "能搜到的几何方法，都是先得到奇数幂次和，\n再代数计算 S，和 3Blue1Brown 完全一样",
             0.34,
@@ -258,14 +259,15 @@ class BaselGeometryQuestion(Scene):
         bypass_label = cn("不能直接从几何得到吗？", 0.44).set_color(ACCENT)
         bypass_label.move_to(UP * 2.2)
 
-        self.play(Write(title[0]), FadeIn(title[1]), run_time=0.9)
+        self.add(title[0])
+        self.play(FadeIn(title[1]), run_time=0.9)
         self.wait(1.92)
 
         self.play(FadeIn(geometry), Create(frame), run_time=1.2)
         self.wait(4.48)
 
-        self.play(FadeIn(step_note), run_time=0.7)
-        self.wait(2.73)
+        # 旁白说到「只是重新整理了一遍」时不再上字，画面留白给下一句的方框变色。
+        self.wait(3.43)
 
         self.play(frame.animate.set_color(ACCENT), run_time=0.8)
         self.play(FadeIn(odd), Create(to_odd), run_time=1.1)
@@ -383,24 +385,15 @@ class BaselGeometryDirect(Scene):
         return VGroup(read, algebra).arrange(DOWN, aligned_edge=LEFT, buff=0.22), read, algebra
 
     def construct(self):
-        title = heading("直接从几何读出 S", "每翻一倍，只补一盏")
+        title = screen_title(METHOD_TITLE, "每翻一倍，只在正对面补一盏", mark="✓")
         P, circles, kids, added, chords, guide = self.build_lamps()
         ledger, caption, terms = self.build_ledger()
         line_block = self.build_line()
         formula, read, algebra = self.build_formula()
         line, origin, line_lamps, line_labels = line_block
 
-        notes = [
-            self.note("周长 2：弧上间隔 1，一盏灯"),
-            self.note("周长 4：在 P 的对面补一盏"),
-            self.note("周长 8：同样只补一盏"),
-            self.note("周长 16：只补一盏"),
-            self.note("周长 32：只补一盏"),
-        ]
-        note_sum = self.note("每补一盏，总亮度就多一档")
-        note_geo = self.note("新灯都在 P 的正对面，距离翻倍")
-        note_line = self.note("整数点上全是灯，两侧合起来是 2S")
-        note_read = self.note("每一项都从图上读出来")
+        # 左上角只报当前周长，其余的话由旁白和右侧亮度表承担。
+        notes = [self.note(f"周长：{2 ** (k + 1)}") for k in range(self.STAGES)]
 
         lamp_P = Dot(P, radius=0.05, color=WHITE)
         label_P = MathTex("P").scale(0.44).next_to(P, DOWN, buff=0.12)
@@ -414,7 +407,8 @@ class BaselGeometryDirect(Scene):
         column.move_to(RIGHT * 3.05 + DOWN * 0.4)
         box = SurroundingRectangle(terms, color=EXTRA, buff=0.12).move_to(terms.get_center())
 
-        self.play(Write(title[0]), FadeIn(title[1]), run_time=0.9)
+        self.add(title[0])
+        self.play(FadeIn(title[1]), run_time=0.9)
         self.play(Create(guide), FadeIn(lamp_P), FadeIn(label_P), run_time=0.9)
 
         # 周长 2：初始那一盏灯，也是亮度表的第一项
@@ -489,16 +483,23 @@ class BaselGeometryDirect(Scene):
         self.play(FadeIn(added[4]), Write(terms[4]), run_time=0.9)
         self.wait(0.6)
 
-        # 与上一页的分别：这里数的是补上的灯，它们的距离每次翻倍
-        self.play(FadeOut(notes[4]), FadeIn(note_sum), run_time=0.9)
-        self.wait(1.1)
+        # 「亮度随着每次增加灯在增加」：把右侧亮度表逐档点亮
+        self.wait(2.0)
+        self.play(
+            LaggedStart(*[Indicate(t, scale_factor=1.35) for t in terms[:5]], lag_ratio=0.25),
+            run_time=2.6,
+        )
+        self.wait(1.3)
+
+        # 「新增的灯的距离每次都是翻倍的」：它们全在同一条虚线上，一档比一档远
+        self.play(guide.animate.set_stroke(width=2.2, opacity=0.95), run_time=1.0)
         self.play(
             LaggedStart(*[Indicate(lamp, scale_factor=1.6) for lamp in added], lag_ratio=0.25),
             run_time=2.6,
         )
-        self.wait(1.3)
-        self.play(FadeOut(note_sum), FadeIn(note_geo), run_time=1.0)
-        self.wait(3.5)
+        self.wait(0.9)
+
+        # 「所以也构成了等比数列」
         self.play(Write(terms[5]), Create(box), run_time=1.2)
         self.wait(1.0)
 
@@ -507,27 +508,118 @@ class BaselGeometryDirect(Scene):
             kids.animate.set_opacity(0.3),
             added.animate.set_opacity(0.45),
             FadeOut(chords[3]),
+            FadeOut(notes[4]),
             run_time=1.5,
         )
-        self.wait(1.4)
-        self.play(Create(line), FadeIn(origin), run_time=1.3)
+        self.play(Create(line), FadeIn(origin), run_time=1.2)
         self.play(FadeIn(two_s), run_time=0.8)
-        self.wait(1.8)
         self.play(
             LaggedStart(*[FadeIn(lamp) for lamp in line_lamps], lag_ratio=0.05),
             run_time=1.6,
         )
-        self.play(FadeIn(line_labels), FadeOut(note_geo), FadeIn(note_line), run_time=1.0)
-        self.wait(0.3)
+        self.play(FadeIn(line_labels), run_time=0.8)
         self.play(Write(read), run_time=1.5)
-        self.wait(1.5)
+        self.wait(0.5)
 
         self.play(Write(algebra), run_time=1.8)
+        self.wait(0.9)
+        self.play(algebra[1].animate.set_color(ACCENT), run_time=1.0)
+        self.wait(2.7)
+
+
+class BaselGeometryOnePic(BaselGeometryDirect):
+    """007-04：圆与极限直线在 P 点重合，整个证明只剩一张图。"""
+
+    FORMULA_PIECES = [
+        r"S=\frac{1}{2}",
+        r"\left(\frac{\pi^2}{2^2}",
+        r"+\ \frac{\pi^2}{4^2}",
+        r"+\ \frac{\pi^2}{8^2}",
+        r"+\ \cdots\ \right)",
+        r"=\ \frac{\pi^2}{6}",
+    ]
+
+    def build_formula(self) -> VGroup:
+        pieces = VGroup(*[MathTex(piece).scale(0.8) for piece in self.FORMULA_PIECES])
+        pieces.arrange(RIGHT, buff=0.16)
+        pieces.move_to(DOWN * 2.3)
+        return pieces
+
+    def construct(self):
+        title = screen_title(METHOD_TITLE, "一张图讲完整个证明", mark="✓")
+        P, circles, kids, added, _, guide = self.build_lamps()
+        line_block = self.build_line()
+        line, origin, line_lamps, line_labels = line_block
+        origin[1].next_to(origin[0], DOWN, buff=0.14)
+        line_block.shift(P - origin[0].get_center())
+
+        picture = VGroup(circles, kids, added, guide, line_block)
+        picture.scale(0.78).move_to(UP * 0.55)
+        formula = self.build_formula()
+        formula[-1].set_color(ACCENT)
+
+        self.add(title[0])
+        # 旁白：最后把整条路线收进一张图 / 五个圆都切在 P 点
+        self.play(FadeIn(title[1]), run_time=0.8)
+        self.wait(2.5)
+        self.play(FadeIn(circles), FadeIn(kids), run_time=1.4)
+        self.wait(0.6)
+
+        # 旁白：每翻一倍，只在正对面补上一盏灯
+        self.play(FadeIn(added), run_time=0.9)
+        self.play(
+            LaggedStart(*[Indicate(lamp, scale_factor=1.5) for lamp in added], lag_ratio=0.3),
+            run_time=1.7,
+        )
+        self.wait(0.8)
+
+        # 旁白：周长无限翻倍之后
+        self.play(Create(guide), run_time=1.2)
+        self.wait(1.1)
+
+        # 旁白：圆压成过 P 的那条直线
+        self.play(Create(line), FadeIn(origin), run_time=1.3)
+        self.wait(0.8)
+
+        # 旁白：整数点上全是灯
+        self.play(
+            LaggedStart(*[FadeIn(lamp) for lamp in line_lamps], lag_ratio=0.05),
+            FadeIn(line_labels),
+            run_time=1.3,
+        )
+        self.wait(0.6)
+
+        # 旁白：上面读的是补上的灯 / 下面读的是整数点上的灯 / 两边合起来正好是 S
+        self.play(
+            LaggedStart(*[Indicate(lamp, scale_factor=1.5) for lamp in added], lag_ratio=0.15),
+            run_time=1.4,
+        )
+        self.wait(0.9)
+        self.play(
+            LaggedStart(
+                *[Indicate(lamp, scale_factor=1.4) for lamp in line_lamps], lag_ratio=0.05
+            ),
+            run_time=1.6,
+        )
         self.wait(0.6)
         self.play(
-            algebra[1].animate.set_color(ACCENT),
-            FadeOut(note_line),
-            FadeIn(note_read),
-            run_time=1.0,
+            Indicate(added, color=EXTRA), Indicate(line_lamps, color=EXTRA), run_time=1.8
         )
-        self.wait(1.6)
+        self.wait(0.55)
+
+        # 旁白逐段读出长表达式：S 等于二分之一 / 括号派平方除以二平方 / ……
+        self.play(Write(formula[0]), run_time=1.0)
+        self.wait(1.5)
+        self.play(Write(formula[1]), run_time=1.4)
+        self.wait(1.05)
+        self.play(Write(formula[2]), run_time=1.2)
+        self.wait(1.1)
+        self.play(Write(formula[3]), run_time=1.2)
+        self.wait(0.7)
+        self.play(Write(formula[4]), run_time=0.9)
+        self.wait(0.25)
+        self.play(Write(formula[5]), run_time=1.2)
+        self.wait(0.8)
+
+        # 旁白：几何自己就给出了药求的表达式
+        self.wait(4.2)

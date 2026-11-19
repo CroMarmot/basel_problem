@@ -1,13 +1,11 @@
-from manim import DOWN, UP, FadeIn, MathTex, Scene, Text, Write
+from manim import DOWN, FadeIn, MathTex, Scene, Write
 
-from .common import ACCENT, CN_FONT
+from .common import ACCENT, screen_title
 
 
 class BaselEuler(Scene):
     def construct(self):
-        title = Text("欧拉的无穷乘积", font=CN_FONT).to_edge(UP)
-        subtitle = Text("类比多项式的因式分解", font=CN_FONT, font_size=30)
-        subtitle.next_to(title, DOWN, buff=0.25)
+        title = screen_title("欧拉的无穷乘积", "类比多项式的因式分解")
         derivation = MathTex(
             r"\begin{aligned}"
             r"1-\left(\sum_{n=1}^{\infty}\frac{1}{n^2\pi^2}\right)x^2+\cdots"
@@ -21,7 +19,7 @@ class BaselEuler(Scene):
                 r"-\frac{x^2}{6}",
             ],
         ).scale(0.6)
-        derivation.next_to(subtitle, DOWN, buff=0.3)
+        derivation.next_to(title, DOWN, buff=0.3)
         left_coef = derivation.get_part_by_tex(
             r"-\left(\sum_{n=1}^{\infty}\frac{1}{n^2\pi^2}\right)x^2"
         )
@@ -32,7 +30,7 @@ class BaselEuler(Scene):
         )
         result.next_to(derivation, DOWN, buff=0.35)
 
-        self.play(Write(title), FadeIn(subtitle))
+        self.play(Write(title[0]), FadeIn(title[1]))
         self.play(Write(derivation), run_time=2.5)
         self.wait(0.5)
         self.play(
@@ -42,4 +40,4 @@ class BaselEuler(Scene):
         )
         self.wait(1)
         self.play(Write(result), run_time=1.5)
-        self.wait(9.2)
+        self.wait(10.0)

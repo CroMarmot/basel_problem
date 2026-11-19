@@ -1,37 +1,42 @@
-from manim import DOWN, LEFT, RIGHT, UP, FadeIn, LaggedStart, MathTex, Scene, Text, VGroup, Write
+from manim import (
+    DOWN,
+    LEFT,
+    RIGHT,
+    FadeIn,
+    Indicate,
+    MathTex,
+    Scene,
+    VGroup,
+    Write,
+)
 
-from .common import ACCENT, CN_FONT
+from .common import ACCENT, body, screen_title
 
 
 class BaselHistory(Scene):
     def construct(self):
-        title_cn = Text("从蒙戈利到欧拉", font=CN_FONT, font_size=44)
-        title_en = Text("Basel Problem · Mengoli to Euler", font_size=28)
-        title = VGroup(title_cn, title_en).arrange(DOWN, buff=0.15).to_edge(UP)
+        title = screen_title("从蒙戈利到欧拉", "Mengoli, Euler")
         euler_result = VGroup(
-            Text("1735 年，欧拉（Leonhard Euler）得到", font=CN_FONT),
-            MathTex(r"\frac{\pi^2}{6}", color=ACCENT).scale(0.9),
+            body("1735 年，欧拉（Leonhard Euler）得到"),
+            MathTex(r"\frac{\pi^2}{6}", color=ACCENT).scale(0.5),
         ).arrange(RIGHT, buff=0.12)
-        items = (
-            VGroup(
-                Text("1644 年，蒙戈利（Pietro Mengoli）提出平方倒数和问题", font=CN_FONT),
-                Text(
-                    "伯努利兄弟（Jakob & Johann Bernoulli）研究但未能求出精确值",
-                    font=CN_FONT,
-                ),
-                euler_result,
-                Text("欧拉因此声名大噪", font=CN_FONT),
-            )
-            .arrange(DOWN, aligned_edge=LEFT, buff=0.45)
-            .scale(0.58)
-        )
-        items.next_to(title, DOWN, buff=0.55)
+        items = VGroup(
+            body("1644 年，蒙戈利（Pietro Mengoli）提出平方倒数和问题"),
+            body("伯努利兄弟（Jakob & Johann Bernoulli）研究但未能求出精确值"),
+            euler_result,
+            body("欧拉因此声名大噪"),
+        ).arrange(DOWN, aligned_edge=LEFT, buff=0.42)
+        items.next_to(title, DOWN, buff=0.6)
 
-        self.play(Write(title))
-        self.play(
-            LaggedStart(
-                *[FadeIn(item, shift=RIGHT) for item in items],
-                lag_ratio=0.25,
-            )
-        )
-        self.wait(3)
+        self.play(Write(title[0]), FadeIn(title[1]), run_time=1.0)
+        self.wait(0.5)
+        self.play(FadeIn(items[0], shift=RIGHT), run_time=0.8)
+        self.wait(2.7)
+        self.play(FadeIn(items[1], shift=RIGHT), run_time=0.8)
+        self.wait(1.9)
+        self.play(FadeIn(items[2], shift=RIGHT), run_time=1.0)
+        self.wait(4.2)
+        self.play(Indicate(euler_result[1], scale_factor=1.4), run_time=1.0)
+        self.wait(0.7)
+        self.play(FadeIn(items[3], shift=RIGHT), run_time=0.9)
+        self.wait(0.4)
