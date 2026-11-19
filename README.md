@@ -41,7 +41,7 @@ uv run ./basel_problem.py --chapters intro,history,fourier
 uv run ./basel_problem.py --segments geometry_circle
 
 # 一次重渲几屏，逗号分隔
-uv run ./basel_problem.py --segments fourier_series,fourier_parseval,fourier_result
+uv run ./basel_problem.py --segments fourier,geometry_circle
 
 # 重建论文 PDF（XeLaTeX 两遍 + 字体与 Missing character 检查）
 uv run python paper/build.py
@@ -69,7 +69,7 @@ temp/chapters/<三位编号>-<章节名>/
         └── merged.mp4
 ```
 
-例如第一章是 `temp/chapters/001-intro/`，后面的 history 是 `002-history`。数字前缀保证 Ubuntu 文件管理器和各类 IDE 按章节顺序排序。傅里叶章 `005-fourier`、几何章 `006-geometry` 按画面拆成多个子片段，章节视频由片段依次拼接而成。只有 `intro` 这类章节 key 与子片段 key 相同时，产物才直接放在章节目录里；`007-summary` 的三屏仍然走 `segments/01-geometry_summary/`、`segments/02-geometry_question/`、`segments/03-geometry_direct/`。
+例如第一章是 `temp/chapters/001-intro/`，后面的 history 是 `002-history`。数字前缀保证 Ubuntu 文件管理器和各类 IDE 按章节顺序排序。几何章 `006-geometry`、总结章 `007-summary` 按画面拆成多个子片段，章节视频由片段依次拼接而成；`005-fourier` 只有一屏。按章节生成时，只有 `intro`、`fourier` 这类章节 key 与子片段 key 相同的情况下，产物才直接放在章节目录里（`--segments` 则一律放在 `segments/NN-<片段名>/` 下）；`007-summary` 的三屏仍然走 `segments/01-geometry_summary/`、`segments/02-geometry_question/`、`segments/03-geometry_direct/`。
 
 只生成指定章节时，只会替换该章节目录，其他章节的中间产物会保留，结果留在 `temp/chapters/` 下，不写入 `output/`。完整运行会先清空 `temp/`，再重新生成全部章节并输出 `output/basel_problem_final.mp4`。`output/` 只保存最终视频和论文 PDF。
 
@@ -136,7 +136,7 @@ basel-problem/
 │   ├── history.py            # 002 从蒙戈利到欧拉
 │   ├── convergence.py        # 003 收敛性
 │   ├── euler.py              # 004 欧拉的无穷乘积
-│   ├── fourier.py            # 005 傅里叶级数与帕塞瓦尔等式（3 屏）
+│   ├── fourier.py            # 005 傅里叶级数与帕塞瓦尔等式（1 屏）
 │   ├── geometry.py           # 006 Wästlund 几何证明（6 屏）
 │   └── summary.py            # 007 几何方法总结（3 屏）
 ├── paper/

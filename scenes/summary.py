@@ -298,104 +298,79 @@ class BaselGeometryQuestion(Scene):
 
 
 class BaselGeometryDirect(Scene):
-    """屏幕 3：每翻倍一次就在 P 的正对面补一盏灯，极限下整数点全是灯。"""
+    """屏幕 3：每翻一倍只在正对面补一盏灯，极限下整数点全是灯。"""
 
-    STAGES = 4
-    R0 = 0.28
+    STAGES = 5
+    R0 = 0.14
     STEP = 0.38
+    NOTE_AT = LEFT * 4.2 + UP * 2.35
+
+    def note(self, text: str):
+        return cn(text, 0.42).move_to(self.NOTE_AT)
 
     def build_lamps(self) -> tuple:
         P = LEFT * 4.6 + DOWN * 3.0
-        circles, odds, evens, added, rings = VGroup(), VGroup(), VGroup(), VGroup(), VGroup()
-        chords_odd, chords_even = VGroup(), VGroup()
+        circles, kids, added, chords = VGroup(), VGroup(), VGroup(), VGroup()
         layers = []
         for k in range(self.STAGES):
             radius = self.R0 * 2**k
             center = P + UP * radius
-            circles.add(Circle(radius=radius, color=WHITE, stroke_width=2.4).move_to(center))
+            circles.add(Circle(radius=radius, color=WHITE, stroke_width=2.2).move_to(center))
             antipode = center + UP * radius
-            here = []
+            pts = []
             for s in range(1, 2 ** (k + 1)):
+                if s == 2**k:
+                    continue
                 theta = -np.pi / 2 + np.pi * s / 2**k
-                point = center + radius * np.array([np.cos(theta), np.sin(theta), 0.0])
-                here.append((s, point))
-            layers.append(here)
-            odds.add(
-                VGroup(
-                    *[
-                        star_at(pt, radius=0.05)
-                        for s, pt in here
-                        if s % 2 and s != 2**k
-                    ]
-                )
-            )
-            evens.add(
-                VGroup(
-                    *[
-                        star_at(pt, radius=0.05)
-                        for s, pt in here
-                        if not s % 2 and s != 2**k
-                    ]
-                )
-            )
-            added.add(star_at(antipode, color=EXTRA, radius=0.075))
-            rings.add(
-                Circle(radius=0.13, color=EXTRA, stroke_width=2, fill_opacity=0)
-                .set_stroke(opacity=0.6)
-                .move_to(antipode)
-            )
+                pts.append(center + radius * np.array([np.cos(theta), np.sin(theta), 0.0]))
+            layers.append(pts + [antipode])
+            kids.add(VGroup(*[star_at(pt, radius=0.045) for pt in pts]))
+            added.add(star_at(antipode, color=EXTRA, radius=0.06))
         for k in range(self.STAGES - 1):
             radius = self.R0 * 2 ** (k + 1)
-            odd_group, even_group = VGroup(), VGroup()
-            for s, point in layers[k]:
+            center = P + UP * radius
+            group = VGroup()
+            for point in layers[k]:
                 direction = np.array([-(point - P)[1], (point - P)[0], 0.0])
                 a, b = chord_through(point, direction, center, radius)
-                chord = Line(a, b, color=WHITE, stroke_width=1.3, stroke_opacity=0.4)
-                (even_group if s % 2 == 0 else odd_group).add(chord)
-            chords_odd.add(odd_group)
-            chords_even.add(even_group)
+                group.add(Line(a, b, color=WHITE, stroke_width=1.2, stroke_opacity=0.35))
+            chords.add(group)
         guide = DashedLine(
             P,
-            P + UP * (self.R0 * 2**self.STAGES),
+            P + UP * (2 * self.R0 * 2 ** (self.STAGES - 1)),
             stroke_width=1.4,
             stroke_opacity=0.45,
         )
-        return P, circles, odds, evens, added, rings, chords_odd, chords_even, guide
-
+        return P, circles, kids, added, chords, guide
     def build_ledger(self) -> tuple:
-        caption = cn("青色：每一轮在正对面补上的灯", 0.4).set_color(EXTRA)
+        caption = cn("每盏新灯给总亮度加上", 0.4)
         terms = VGroup(
             MathTex(r"\frac{\pi^2}{2^2}"),
             MathTex(r"+\ \frac{\pi^2}{4^2}"),
             MathTex(r"+\ \frac{\pi^2}{8^2}"),
             MathTex(r"+\ \frac{\pi^2}{16^2}"),
+            MathTex(r"+\ \frac{\pi^2}{32^2}"),
             MathTex(r"+\ \cdots"),
         )
         for term in terms:
-            term.scale(0.55)
-        terms.arrange(RIGHT, buff=0.1)
+            term.scale(0.5).set_color(EXTRA)
+        terms.arrange(RIGHT, buff=0.08)
         ledger = VGroup(caption, terms).arrange(DOWN, aligned_edge=LEFT, buff=0.16)
-        ledger.move_to(RIGHT * 3.4 + UP * 2.35)
-        return ledger, terms
+        return ledger, caption, terms
 
-    def build_line(self) -> tuple:
-        center = RIGHT * 3.0 + DOWN * 0.35
+    def build_line(self) -> VGroup:
         offsets = [v for v in range(-7, 8) if v]
-        line = Line(center + LEFT * 3.15, center + RIGHT * 3.15, color=WHITE, stroke_width=2)
-        origin = Dot(center, radius=0.05, color=WHITE)
-        label_origin = MathTex("P").scale(0.44).next_to(origin, UP, buff=0.12)
-        lamps = VGroup(
-            *[star_at(center + RIGHT * self.STEP * v, radius=0.05) for v in offsets]
-        )
+        line = Line(LEFT * 3.15, RIGHT * 3.15, color=WHITE, stroke_width=2)
+        dot = Dot(radius=0.05, color=WHITE)
+        origin = VGroup(dot, MathTex("P").scale(0.44).next_to(dot, UP, buff=0.12))
+        lamps = VGroup(*[star_at(RIGHT * self.STEP * v, radius=0.05) for v in offsets])
         labels = VGroup(
             *[
-                MathTex(str(v)).scale(0.36).next_to(
-                    center + RIGHT * self.STEP * v, DOWN, buff=0.16
-                )
+                MathTex(str(v)).scale(0.36).next_to(RIGHT * self.STEP * v, DOWN, buff=0.16)
                 for v in offsets
             ]
         )
-        return line, VGroup(origin, label_origin), lamps, labels
+        return VGroup(line, origin, lamps, labels)
 
     def build_formula(self) -> tuple:
         read = MathTex(
@@ -405,119 +380,154 @@ class BaselGeometryDirect(Scene):
             MathTex(r"=\frac{1}{2}\cdot\frac{\pi^2}{4}\cdot\frac{1}{1-\frac{1}{4}}").scale(0.55),
             MathTex(r"=\frac{\pi^2}{6}").scale(0.6),
         ).arrange(RIGHT, buff=0.18)
-        block = VGroup(read, algebra).arrange(DOWN, aligned_edge=LEFT, buff=0.22)
-        block.move_to(RIGHT * 2.5 + DOWN * 2.5)
-        return block, read, algebra
+        return VGroup(read, algebra).arrange(DOWN, aligned_edge=LEFT, buff=0.22), read, algebra
 
     def construct(self):
-        title = heading("直接从几何读出 S", "每补一盏，多一层灯")
-        P, circles, odds, evens, added, rings, chords_odd, chords_even, guide = (
-            self.build_lamps()
-        )
-        ledger, terms = self.build_ledger()
-        line, origin, line_lamps, line_labels = self.build_line()
+        title = heading("直接从几何读出 S", "每翻一倍，只补一盏")
+        P, circles, kids, added, chords, guide = self.build_lamps()
+        ledger, caption, terms = self.build_ledger()
+        line_block = self.build_line()
         formula, read, algebra = self.build_formula()
+        line, origin, line_lamps, line_labels = line_block
+
+        notes = [
+            self.note("周长 2：弧上间隔 1，一盏灯"),
+            self.note("周长 4：在 P 的对面补一盏"),
+            self.note("周长 8：同样只补一盏"),
+            self.note("周长 16：只补一盏"),
+            self.note("周长 32：只补一盏"),
+        ]
+        note_sum = self.note("每补一盏，总亮度就多一档")
+        note_geo = self.note("新灯都在 P 的正对面，距离翻倍")
+        note_line = self.note("整数点上全是灯，两侧合起来是 2S")
+        note_read = self.note("每一项都从图上读出来")
 
         lamp_P = Dot(P, radius=0.05, color=WHITE)
         label_P = MathTex("P").scale(0.44).next_to(P, DOWN, buff=0.12)
-        note_odd = cn("奇数位置有灯，偶数位置是空的", 0.42)
-        note_add = cn("每翻倍一次，就在正对面补上一盏", 0.42)
-        note_pair = cn("一盏换成两盏等效灯，总亮度不变", 0.42)
-        note_full = cn("每隔一个单位，就站一盏灯", 0.42)
-        note_read = cn("每一项都从图上读出来", 0.42)
-        for note in (note_odd, note_add, note_pair, note_full, note_read):
-            note.move_to(LEFT * 4.2 + UP * 2.2)
-        two_s = VGroup(cn("两侧合起来的总亮度", 0.4), MathTex(r"=2S").scale(0.6)).arrange(
-            RIGHT, buff=0.25
+        two_s = VGroup(
+            cn("两侧合起来的总亮度", 0.4), MathTex(r"=2S").scale(0.6)
+        ).arrange(RIGHT, buff=0.25)
+
+        column = VGroup(ledger, two_s, line_block, formula).arrange(
+            DOWN, aligned_edge=LEFT, buff=0.55
         )
-        two_s.move_to(RIGHT * 3.0 + UP * 1.15)
-        box = SurroundingRectangle(terms, color=EXTRA, buff=0.14)
-        ratio = MathTex(r"q=\frac{1}{4}").scale(0.5).next_to(box, RIGHT, buff=0.22)
+        column.move_to(RIGHT * 3.05 + DOWN * 0.4)
+        box = SurroundingRectangle(terms, color=EXTRA, buff=0.12).move_to(terms.get_center())
 
         self.play(Write(title[0]), FadeIn(title[1]), run_time=0.9)
+        self.play(Create(guide), FadeIn(lamp_P), FadeIn(label_P), run_time=0.9)
 
-        self.play(Create(guide), FadeIn(lamp_P), FadeIn(label_P), run_time=0.8)
-        self.play(Create(circles[0]), run_time=0.7)
-        self.play(FadeIn(added[0]), run_time=0.6)
-        self.wait(1.9)
+        # 周长 2：初始那一盏灯，也是亮度表的第一项
+        self.wait(2.2)
+        self.play(Create(circles[0]), FadeIn(notes[0]), run_time=0.9)
+        self.wait(1.3)
+        self.play(FadeIn(caption), Write(terms[0]), FadeIn(added[0]), run_time=1.0)
 
-        self.play(FadeIn(note_odd), run_time=0.7)
-        self.play(Create(circles[1]), run_time=0.6)
-        self.play(Create(chords_odd[0]), FadeIn(odds[1]), run_time=0.9)
-        self.wait(0.7)
-        self.play(Create(circles[2]), run_time=0.6)
-        self.play(Create(chords_odd[1]), FadeIn(odds[2]), run_time=1.0)
-        self.wait(3.3)
-
-        self.play(FadeIn(rings[1]), FadeIn(rings[2]), run_time=0.9)
-        self.wait(1.9)
-
+        # 四次翻倍：画新圆时清掉上一轮的辅助线，补灯与右侧新增一项同时出现
+        self.wait(1.3)
+        self.play(Create(circles[1]), run_time=0.8)
         self.play(
-            FadeOut(note_odd),
-            FadeIn(note_add),
-            FadeIn(added[1]),
-            FadeOut(rings[1]),
-            FadeIn(ledger[0]),
-            run_time=0.9,
+            Create(chords[0]),
+            FadeIn(kids[1]),
+            FadeOut(notes[0]),
+            FadeIn(notes[1]),
+            run_time=1.1,
         )
-        self.play(Create(chords_even[1]), FadeIn(evens[2]), run_time=0.8)
-        self.play(FadeIn(added[2]), FadeOut(rings[2]), run_time=0.7)
-        self.play(Create(circles[3]), Create(chords_odd[2]), FadeIn(odds[3]), run_time=1.1)
+        self.wait(0.9)
+        self.play(FadeIn(added[1]), Write(terms[1]), run_time=0.9)
+        self.wait(1.8)
         self.play(
-            Create(chords_even[2]), FadeIn(evens[3]), FadeIn(rings[3]), run_time=0.9
-        )
-        self.play(FadeIn(added[3]), FadeOut(rings[3]), run_time=0.7)
-
-        self.wait(4.0)
-        for term in terms[:4]:
-            self.play(Write(term), run_time=0.5)
-            self.wait(0.9)
-        self.play(FadeIn(terms[4]), run_time=0.5)
-        self.wait(0.5)
-
-        self.play(FadeOut(note_add), FadeIn(note_pair), run_time=0.9)
-        self.wait(2.4)
-        self.play(
-            LaggedStart(*[Indicate(lamp, scale_factor=1.5) for lamp in added], lag_ratio=0.3),
-            run_time=2.8,
-        )
-        self.wait(2.0)
-
-        self.play(
-            FadeOut(note_pair),
-            FadeIn(note_full),
-            FadeOut(chords_odd),
-            FadeOut(chords_even),
+            LaggedStart(
+                *[Indicate(lamp, scale_factor=1.35) for lamp in kids[1]], lag_ratio=0.3
+            ),
             run_time=1.2,
         )
-        self.wait(3.6)
+
+        self.wait(1.4)
+        self.play(
+            Create(circles[2]),
+            Create(chords[1]),
+            FadeIn(kids[2]),
+            FadeOut(chords[0]),
+            FadeOut(notes[1]),
+            FadeIn(notes[2]),
+            run_time=1.4,
+        )
+        self.wait(0.4)
+        self.play(FadeIn(added[2]), Write(terms[2]), run_time=0.9)
+        self.wait(2.3)
+        self.play(
+            LaggedStart(
+                *[Indicate(lamp, scale_factor=1.35) for lamp in kids[2]], lag_ratio=0.1
+            ),
+            run_time=1.3,
+        )
+
+        self.wait(1.9)
+        self.play(
+            Create(circles[3]),
+            Create(chords[2]),
+            FadeIn(kids[3]),
+            FadeOut(chords[1]),
+            FadeOut(notes[2]),
+            FadeIn(notes[3]),
+            run_time=1.5,
+        )
+        self.wait(0.8)
+        self.play(FadeIn(added[3]), Write(terms[3]), run_time=0.9)
+
+        self.wait(0.5)
+        self.play(
+            Create(circles[4]),
+            Create(chords[3]),
+            FadeIn(kids[4]),
+            FadeOut(chords[2]),
+            FadeOut(notes[3]),
+            FadeIn(notes[4]),
+            run_time=1.5,
+        )
+        self.play(FadeIn(added[4]), Write(terms[4]), run_time=0.9)
+        self.wait(0.6)
+
+        # 与上一页的分别：这里数的是补上的灯，它们的距离每次翻倍
+        self.play(FadeOut(notes[4]), FadeIn(note_sum), run_time=0.9)
+        self.wait(1.1)
+        self.play(
+            LaggedStart(*[Indicate(lamp, scale_factor=1.6) for lamp in added], lag_ratio=0.25),
+            run_time=2.6,
+        )
+        self.wait(1.3)
+        self.play(FadeOut(note_sum), FadeIn(note_geo), run_time=1.0)
+        self.wait(3.5)
+        self.play(Write(terms[5]), Create(box), run_time=1.2)
+        self.wait(1.0)
 
         self.play(
             circles.animate.set_opacity(0.22),
-            odds.animate.set_opacity(0.35),
-            evens.animate.set_opacity(0.35),
-            added.animate.set_opacity(0.4),
-            FadeOut(note_full),
-            run_time=1.2,
+            kids.animate.set_opacity(0.3),
+            added.animate.set_opacity(0.45),
+            FadeOut(chords[3]),
+            run_time=1.5,
         )
-        self.play(Create(line), FadeIn(origin), run_time=1.0)
+        self.wait(1.4)
+        self.play(Create(line), FadeIn(origin), run_time=1.3)
+        self.play(FadeIn(two_s), run_time=0.8)
+        self.wait(1.8)
         self.play(
-            LaggedStart(*[FadeIn(lamp) for lamp in line_lamps], lag_ratio=0.06),
+            LaggedStart(*[FadeIn(lamp) for lamp in line_lamps], lag_ratio=0.05),
             run_time=1.6,
         )
-        self.play(FadeIn(line_labels), run_time=0.9)
-        self.play(FadeIn(two_s), run_time=0.8)
-        self.wait(2.2)
+        self.play(FadeIn(line_labels), FadeOut(note_geo), FadeIn(note_line), run_time=1.0)
+        self.wait(0.3)
+        self.play(Write(read), run_time=1.5)
+        self.wait(1.5)
 
-        self.play(Create(box), FadeIn(ratio), run_time=1.0)
-        self.wait(4.1)
-
-        self.play(Write(read), run_time=1.6)
-        self.wait(0.6)
         self.play(Write(algebra), run_time=1.8)
-        self.wait(0.5)
-        self.play(algebra[1].animate.set_color(ACCENT), run_time=0.7)
-        self.wait(0.9)
-
-        self.play(FadeIn(note_read), run_time=0.8)
-        self.wait(6.8)
+        self.wait(0.6)
+        self.play(
+            algebra[1].animate.set_color(ACCENT),
+            FadeOut(note_line),
+            FadeIn(note_read),
+            run_time=1.0,
+        )
+        self.wait(1.6)

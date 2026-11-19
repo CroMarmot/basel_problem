@@ -12,7 +12,7 @@
     uv run ./basel_problem.py --chapters intro
     uv run ./basel_problem.py --segments geometry_light,geometry_circle
 
-多屏章节（fourier、geometry）按「一屏一个子片段」拆分，每段单独配音与合并，
+多屏章节（geometry、summary）按「一屏一个子片段」拆分，每段单独配音与合并，
 再在章节内拼接，避免整章音视频内部不同步。
 """
 
@@ -260,7 +260,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--segments",
-        help="只生成指定子片段，逗号分隔，例如：fourier_series,fourier_result",
+        help="只生成指定子片段，逗号分隔，例如：fourier,geometry_circle",
     )
     parser.add_argument(
         "--list",

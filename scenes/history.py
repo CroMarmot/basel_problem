@@ -1,4 +1,4 @@
-from manim import DOWN, RIGHT, UP, FadeIn, LaggedStart, MathTex, Scene, Text, VGroup, Write
+from manim import DOWN, LEFT, RIGHT, UP, FadeIn, LaggedStart, MathTex, Scene, Text, VGroup, Write
 
 from .common import ACCENT, CN_FONT
 

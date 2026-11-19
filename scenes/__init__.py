@@ -1,10 +1,6 @@
 from .convergence import BaselConvergence
 from .euler import BaselEuler
-from .fourier import (
-    BaselFourierParseval,
-    BaselFourierResult,
-    BaselFourierSeries,
-)
+from .fourier import BaselFourier
 from .geometry import (
     BaselGeometryCircle,
     BaselGeometryDoubling,
@@ -26,9 +22,7 @@ SCENES = [
     ("history", BaselHistory),
     ("convergence", BaselConvergence),
     ("euler", BaselEuler),
-    ("fourier_series", BaselFourierSeries),
-    ("fourier_parseval", BaselFourierParseval),
-    ("fourier_result", BaselFourierResult),
+    ("fourier", BaselFourier),
     ("geometry_light", BaselGeometryLight),
     ("geometry_pythagoras", BaselGeometryPythagoras),
     ("geometry_circle", BaselGeometryCircle),
@@ -45,7 +39,7 @@ CHAPTERS = [
     ("history", 2, ["history"]),
     ("convergence", 3, ["convergence"]),
     ("euler", 4, ["euler"]),
-    ("fourier", 5, ["fourier_series", "fourier_parseval", "fourier_result"]),
+    ("fourier", 5, ["fourier"]),
     ("geometry", 6, [
         "geometry_light",
         "geometry_pythagoras",
