@@ -14,16 +14,25 @@
 
 多屏章节（geometry、summary）按「一屏一个子片段」拆分，每段单独配音与合并，
 再在章节内拼接，避免整章音视频内部不同步。
+
+中间产物仍按原来的层级放在 `temp/chapters/` 下，只是文件名里带上内容指纹（xxhash）：
+无声视频 = 场景源码（含它 import 的本地模块）+ 渲染参数，音频 = 旁白文本 + TTS 参数，
+merged = 两者联合，章节拼接 = 本章各 merged 联合。指纹没变就直接复用现成文件，同目录里
+指纹过期的旧文件会被删掉；`temp/` 不再整体清空，想强制重来就 `rm -rf temp`。
 """
 
 import argparse
+import ast
 import asyncio
+import inspect
 import re
 import shutil
 import subprocess
 import sys
 from pathlib import Path
 
+import manim
+import xxhash
 from manim import config
 
 from scenes import CHAPTER_NUMBERS, CHAPTERS, SCENES
@@ -47,6 +56,11 @@ config.media_dir = str(TEMP_DIR / "manim_media")
 NARRATION_DIR = BASE_DIR / "narration"
 NARRATION_LANG = "zh"
 SCENE_MAP = dict(SCENES)
+SCENES_DIR = BASE_DIR / "scenes"
+
+VOICE = "zh-CN-XiaoxiaoNeural"
+TTS_RATE = "+0%"
+TTS_VOLUME = "+0%"
 
 
 def load_chapter_narration(chapter_key: str, lang: str = NARRATION_LANG) -> dict[str, str]:
@@ -96,29 +110,96 @@ def load_narration(lang: str = NARRATION_LANG) -> dict[str, str]:
 SCRIPT_SEGMENTS = load_narration()
 
 
-def reset_temp_dir() -> None:
-    """每次完整运行前清空 temp，保证中间产物可重复生成。"""
-    if TEMP_DIR.exists():
-        shutil.rmtree(TEMP_DIR)
-    TEMP_DIR.mkdir(parents=True)
-    config.media_dir = str(TEMP_DIR / "manim_media")
+def digest(*chunks: object) -> str:
+    """把若干输入串成一个 xxhash 指纹（每段之间补 0，避免拼接歧义）。"""
+    hasher = xxhash.xxh64()
+    for chunk in chunks:
+        raw = chunk.encode("utf-8") if isinstance(chunk, str) else bytes(chunk)
+        hasher.update(raw)
+        hasher.update(b"\0")
+    return hasher.hexdigest()
 
 
-async def generate_audio_segment(key: str, chapter_dir: Path) -> Path:
-    """为某个片段生成中文语音，返回 MP3 路径。"""
-    chapter_dir.mkdir(parents=True, exist_ok=True)
-    text = SCRIPT_SEGMENTS[key]
-    mp3_path = chapter_dir / f"{key}.mp3"
-    if not mp3_path.exists():
-        print(f"生成语音: {key}")
-        communicate = edge_tts.Communicate(
-            text=text,
-            voice="zh-CN-XiaoxiaoNeural",
-            rate="+0%",
-            volume="+0%",
+def local_imports(path: Path) -> list[str]:
+    """列出某个场景文件从 scenes 包内部 import 的模块名。"""
+    names = []
+    for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
+        if isinstance(node, ast.ImportFrom) and node.level:
+            if node.module:
+                names.append(node.module)
+            names.extend(alias.name for alias in node.names)
+    return names
+
+
+def scene_source_files(scene_class: type) -> list[Path]:
+    """场景渲染真正依赖的源文件：它自己，加上它（递归）import 的本地模块。"""
+    start = Path(inspect.getfile(scene_class))
+    pending, seen = [start], set()
+    while pending:
+        path = pending.pop()
+        if path in seen:
+            continue
+        seen.add(path)
+        for name in local_imports(path):
+            for candidate in (SCENES_DIR / f"{name}.py", SCENES_DIR / name / "__init__.py"):
+                if candidate.exists():
+                    pending.append(candidate)
+    return sorted(seen)
+
+
+def render_settings_tag() -> str:
+    """影响无声视频的参数：Manim 版本、帧率、分辨率、背景色。"""
+    return "|".join(
+        str(value)
+        for value in (
+            manim.__version__,
+            config.frame_rate,
+            config.pixel_width,
+            config.pixel_height,
+            config.background_color,
         )
-        await communicate.save(str(mp3_path))
-    return mp3_path
+    )
+
+
+def video_fingerprint(segment_key: str) -> str:
+    scene_class = SCENE_MAP[segment_key]
+    parts = [render_settings_tag(), scene_class.__name__]
+    for path in scene_source_files(scene_class):
+        parts.append(str(path.relative_to(BASE_DIR)))
+        parts.append(path.read_text(encoding="utf-8"))
+    return digest(*parts)
+
+
+def audio_fingerprint(segment_key: str) -> str:
+    return digest(VOICE, TTS_RATE, TTS_VOLUME, SCRIPT_SEGMENTS[segment_key])
+
+
+def merged_fingerprint(segment_key: str, video_hash: str, audio_hash: str) -> str:
+    return digest(f"{segment_key}/merged", video_hash, audio_hash)
+
+
+def ready(path: Path) -> bool:
+    return path.exists() and path.stat().st_size > 0
+
+
+def prune(directory: Path, pattern: str, keep: Path) -> None:
+    """删掉同目录下指纹过期的旧产物，每种成品在目录里始终只留当前那一份。"""
+    for stale in directory.glob(pattern):
+        if stale != keep:
+            stale.unlink()
+
+
+async def synthesize_audio(segment_key: str, mp3_path: Path) -> None:
+    """为某个片段生成中文语音。"""
+    mp3_path.parent.mkdir(parents=True, exist_ok=True)
+    print(f"生成语音: {segment_key}")
+    communicate = edge_tts.Communicate(
+        text=SCRIPT_SEGMENTS[segment_key],
+        voice=VOICE,
+        rate=TTS_RATE,
+        volume=TTS_VOLUME,
+    )
+    await communicate.save(str(mp3_path))
 
 
 def get_duration(file_path: Path, media_type: str = "audio") -> float:
@@ -270,25 +351,40 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-async def render_segment(segment_key: str, segment_dir: Path) -> Path:
-    """渲染一个子片段，返回带音频的 merged.mp4。"""
+async def render_segment(segment_key: str, segment_dir: Path) -> tuple[Path, str]:
+    """渲染一个子片段，返回 (带音频的 merged.mp4, 它的指纹)。"""
+    video_hash = video_fingerprint(segment_key)
+    audio_hash = audio_fingerprint(segment_key)
+    merge_hash = merged_fingerprint(segment_key, video_hash, audio_hash)
+
+    silent_path = segment_dir / f"silent-{video_hash}.mp4"
+    audio_path = segment_dir / f"{segment_key}-{audio_hash}.mp3"
+    merged_path = segment_dir / f"merged-{merge_hash}.mp4"
     segment_dir.mkdir(parents=True, exist_ok=True)
+
     print(f"\n处理片段: {segment_key}")
+    if ready(merged_path):
+        print(f"复用整段: {merged_path.name}")
+    else:
+        if ready(silent_path):
+            print(f"复用无声视频: {silent_path.name}")
+        else:
+            scene = SCENE_MAP[segment_key]()
+            scene.render()
+            shutil.move(scene.renderer.file_writer.movie_file_path, silent_path)
+            print(f"无声视频: {silent_path}")
+        if ready(audio_path):
+            print(f"复用语音: {audio_path.name}")
+        else:
+            await synthesize_audio(segment_key, audio_path)
+            print(f"语音文件: {audio_path}")
+        if not merge_video_audio_with_ffmpeg(silent_path, audio_path, merged_path):
+            sys.exit(1)
 
-    video_path = segment_dir / "silent.mp4"
-    scene = SCENE_MAP[segment_key]()
-    scene.render()
-    rendered = scene.renderer.file_writer.movie_file_path
-    shutil.move(rendered, video_path)
-    print(f"无声视频: {video_path}")
-
-    audio_path = await generate_audio_segment(segment_key, segment_dir)
-    print(f"语音文件: {audio_path}")
-
-    merged_path = segment_dir / "merged.mp4"
-    if not merge_video_audio_with_ffmpeg(video_path, audio_path, merged_path):
-        sys.exit(1)
-    return merged_path
+    prune(segment_dir, "silent-*.mp4", silent_path)
+    prune(segment_dir, f"{segment_key}-*.mp3", audio_path)
+    prune(segment_dir, "merged-*.mp4", merged_path)
+    return merged_path, merge_hash
 
 
 async def main() -> None:
@@ -317,7 +413,6 @@ async def main() -> None:
                 f"未知子片段: {', '.join(unknown)}\n可用子片段: {', '.join(SCENE_MAP)}"
             )
         requested_set = set(requested)
-        TEMP_DIR.mkdir(exist_ok=True)
         final_clips: list[Path] = []
         for chapter_key, _, segments in CHAPTERS:
             for index, segment_key in enumerate(segments, start=1):
@@ -330,8 +425,8 @@ async def main() -> None:
                     / "segments"
                     / f"{index:02d}-{segment_key}"
                 )
-                shutil.rmtree(segment_dir, ignore_errors=True)
-                final_clips.append(await render_segment(segment_key, segment_dir))
+                clip, _ = await render_segment(segment_key, segment_dir)
+                final_clips.append(clip)
         print("\n子片段已生成，未写入 output：")
         for clip in final_clips:
             print(f"  {clip}")
@@ -349,21 +444,19 @@ async def main() -> None:
             for chapter_key, _, segments in CHAPTERS
             if chapter_key in requested
         ]
-        TEMP_DIR.mkdir(exist_ok=True)
     else:
         selected = [
             (chapter_key, segments) for chapter_key, _, segments in CHAPTERS
         ]
-        reset_temp_dir()
 
     final_clips: list[Path] = []
     for chapter_key, segments in selected:
         print(f"\n处理章节: {chapter_dir_name(chapter_key)}")
         chapter_dir = TEMP_DIR / "chapters" / chapter_dir_name(chapter_key)
-        shutil.rmtree(chapter_dir, ignore_errors=True)
         chapter_dir.mkdir(parents=True, exist_ok=True)
 
         segment_clips: list[Path] = []
+        segment_hashes: list[str] = []
         for index, segment_key in enumerate(segments, start=1):
             if len(segments) == 1 and segment_key == chapter_key:
                 segment_dir = chapter_dir
@@ -371,14 +464,22 @@ async def main() -> None:
                 segment_dir = (
                     chapter_dir / "segments" / f"{index:02d}-{segment_key}"
                 )
-            segment_clips.append(await render_segment(segment_key, segment_dir))
+            clip, clip_hash = await render_segment(segment_key, segment_dir)
+            segment_clips.append(clip)
+            segment_hashes.append(clip_hash)
 
         if len(segment_clips) == 1:
+            # 单屏章节不需要拼接，片段本身就是章节视频。
             chapter_clip = segment_clips[0]
         else:
-            chapter_clip = chapter_dir / "merged.mp4"
-            concatenate_videos(segment_clips, chapter_clip)
-            print(f"章节合并完成: {chapter_clip}")
+            chapter_hash = digest(f"{chapter_key}/chapter", *segment_hashes)
+            chapter_clip = chapter_dir / f"merged-{chapter_hash}.mp4"
+            if ready(chapter_clip):
+                print(f"复用章节拼接: {chapter_clip.name}")
+            else:
+                concatenate_videos(segment_clips, chapter_clip)
+                print(f"章节合并完成: {chapter_clip}")
+            prune(chapter_dir, "merged-*.mp4", chapter_clip)
         final_clips.append(chapter_clip)
 
     if args.chapters:

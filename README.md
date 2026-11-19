@@ -55,23 +55,31 @@ uv run python paper/build.py
 
 `specs.md` 是人与 AI 约定成品的章节规格，`narration/zh/` 是逐字语音原稿。视频会逐章渲染、配音、合并，再拼接成片。
 
-中间产物保存在：
+中间产物都保存在 `temp/` 里，层级和以前一样，只是文件名里插入了内容指纹（xxhash）：
 
 ```text
-temp/chapters/<三位编号>-<章节名>/
-├── silent.mp4                 # 单片段章节
-├── <章节名>.mp3
-├── merged.mp4
-└── segments/                  # 多片段章节
-    └── <两位序号>-<片段名>/
-        ├── silent.mp4
-        ├── <片段名>.mp3
-        └── merged.mp4
+temp/
+├── manim_media/
+└── chapters/<三位编号>-<章节名>/
+    ├── silent-<vhash>.mp4              # 单片段章节
+    ├── <章节名>-<ahash>.mp3
+    ├── merged-<mhash>.mp4
+    ├── merged-<chash>.mp4              # 多片段章节的拼接成品
+    └── segments/
+        └── <两位序号>-<片段名>/
+            ├── silent-<vhash>.mp4      # hash(场景源码 + 它 import 的本地模块, Manim 版本, 帧率, 分辨率, 背景色)
+            ├── <片段名>-<ahash>.mp3    # hash(旁白文本, 音色, rate, volume)
+            └── merged-<mhash>.mp4      # hash(vhash + ahash)
 ```
 
 例如第一章是 `temp/chapters/001-intro/`，后面的 history 是 `002-history`。数字前缀保证 Ubuntu 文件管理器和各类 IDE 按章节顺序排序。几何章 `006-geometry`、总结章 `007-summary` 按画面拆成多个子片段，章节视频由片段依次拼接而成；`005-fourier` 只有一屏。按章节生成时，只有 `intro`、`fourier` 这类章节 key 与子片段 key 相同的情况下，产物才直接放在章节目录里（`--segments` 则一律放在 `segments/NN-<片段名>/` 下）；`007-summary` 的四屏仍然走 `segments/01-geometry_summary/`、`segments/02-geometry_question/`、`segments/03-geometry_direct/`、`segments/04-geometry_onepic/`。
 
-只生成指定章节时，只会替换该章节目录，其他章节的中间产物会保留，结果留在 `temp/chapters/` 下，不写入 `output/`。完整运行会先清空 `temp/`，再重新生成全部章节并输出 `output/basel_problem_final.mp4`。`output/` 只保存最终视频和论文 PDF。
+只生成指定章节时，只会替换该章节目录，其他章节的中间产物会保留，结果留在 `temp/chapters/` 下，不写入 `output/`。完整运行会重走一遍全部章节，但只重生成指纹变了的产物，最终输出 `output/basel_problem_final.mp4`。`output/` 只保存最终视频和论文 PDF。
+
+改一屏的源码只让那一屏的 video/merged 指纹变化，其余片段连渲染都不进；只改旁白则无声视频照用，
+只重新配音与合并；章节拼接同样按指纹复用，未变的章节直接用章节目录里现成的 `merged-<chash>.mp4` 去拼，
+最后一步只是把各章成品串起来。指纹看不见字体、ffmpeg 版本这类外部输入，也不认 `basel_problem.py` 自己的改动，
+怀疑结果不对就 `rm -rf temp` 强制重来。
 
 动画时长与旁白时长按片段补齐，因此每个片段只覆盖一屏内容，避免整章音画漂移。
 
@@ -83,14 +91,14 @@ temp/chapters/<三位编号>-<章节名>/
 uv run ./basel_problem.py --segments geometry_circle
 
 # 3. 播一眼这一屏，人眼检查画面和配音是否对得上
-xdg-open temp/chapters/006-geometry/segments/03-geometry_circle/merged.mp4
+xdg-open temp/chapters/006-geometry/segments/03-geometry_circle/merged-*.mp4
 
 # 4. 满意后重建整章，章节视频由 6 个子片段依次拼接
 uv run ./basel_problem.py --chapters geometry
 ```
 
-旁白改在 `narration/zh/<章节 key>.md` 对应 `## <key>` 小节里的正文。`--segments` 会先删掉片段
-目录，所以配音一定按新文字重新生成。排 `self.wait()` 时让动画总时长略大于旁白
+旁白改在 `narration/zh/<章节 key>.md` 对应 `## <key>` 小节里的正文。`--segments` 只重生成指纹变了的
+产物：文字没改就直接用目录里现成的 `<片段名>-<ahash>.mp3`，改了一个字就重新配音并换名。排 `self.wait()` 时让动画总时长略大于旁白
 （多 0.5～1 秒）：音频比视频长时，合并会把最后一帧冻住补满，看起来像卡带。
 
 ## 生成 PDF 论文
