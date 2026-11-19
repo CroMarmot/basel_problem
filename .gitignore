@@ -29,3 +29,13 @@ paper_geo/*.out
 paper_geo/*.toc
 paper_geo/*.synctex.gz
 paper_geo/*.pdf
+
+paper_en/*.aux
+paper_en/*.log
+paper_en/*.out
+paper_en/*.toc
+paper_en/*.synctex.gz
+paper_en/*.pdf
+
+# 本地便签
+remind.md

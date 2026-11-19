@@ -26,7 +26,8 @@
 ## 输出
 
 - 最终视频：`output/basel_problem_final.mp4`，只在完整运行时生成。
-- 单章测试：`temp/chapters/<三位编号>-<章节名>/merged-<chash>.mp4`，不写入 `output/`。
+- 英文版最终视频：`output/basel_problem_final_en.mp4`，由 `--lang en` 完整运行产出。
+- 单章测试：`temp/chapters/<三位编号>-<章节名>/merged-<chash>.mp4`，不写入 `output/`；英文版在 `temp/chapters_en/` 下同名同层级。
 - 论文：`output/basel_problem_paper.pdf`（中文，XeLaTeX）、`output/basel_problem_paper_geo.pdf`（中文几何版，XeLaTeX）、`output/basel_problem_paper_en.pdf`（英文，pdfLaTeX，投 arXiv）
 - 中间产物：`temp/chapters/<三位编号>-<章节名>/silent-<vhash>.mp4`、`<章节名>-<ahash>.mp3`、`merged-<mhash>.mp4`
 - 一屏一个子片段：多屏章节拆成若干片段后，产物放在 `temp/chapters/<三位编号>-<章节名>/segments/<两位序号>-<片段名>/`，章节内按序号拼接。每屏的动画与旁白单独配音、单独补齐，避免整章内部音画漂移。
@@ -51,16 +52,28 @@
 - `temp/chapters/` 下的目录使用三位数字前缀，保证文件管理器按章节顺序排序。
 - 中间产物按输入内容取 xxhash，指纹直接写进原来的文件名（`silent-<vhash>.mp4`、
   `<片段名>-<ahash>.mp3`、`merged-<mhash>.mp4`、章节的 `merged-<chash>.mp4`），层级结构不变：
-  - 音频 = 旁白文本 + 音色 + rate + volume；
-  - 无声视频 = 渲染参数（Manim 版本、帧率、分辨率、背景色）+ 场景类名 + 场景文件与它
-    在 `scenes/` 内递归 import 的模块（`common.py`、`geometry.py` 等）的源码；
+  - 音频 = 语言 + 音色 + rate + volume + 旁白文本；
+  - 无声视频 = 渲染参数（Manim 版本、帧率、分辨率、背景色、屏幕文字语言）+ 场景类名 + 场景文件与它
+    在 `scenes/` 内递归 import 的模块（`common.py`、`geometry.py` 等）的源码；中文版不看 `i18n.py`，
+    改英文对译不会作废中文缓存；
   - merged = 片段名 + video 指纹 + audio 指纹；chapter = 章名 + 本章各 merged 指纹。
   因此改一屏源码只重渲那一屏，改旁白只重配那一段音，未变的章节直接拿现成的章节成品参与最终拼接；
   最终 `output/basel_problem_final.mp4` 每次都重新串一遍（只是 copy 级拼接，代价可忽略）。
   产出新指纹后，同目录里旧指纹的文件会被删掉。指纹看不见字体、ffmpeg 版本这类外部输入，
   也不认 `basel_problem.py` 自身的改动（改合并参数不会让 merged 失效），
   `rm -rf temp` 即为强制全量重建。
-- `narration/zh/<章节名>.md` 是旁白的唯一来源；修改旁白后重新运行视频脚本即可。
+- `narration/<lang>/<章节名>.md` 是旁白的唯一来源；修改旁白后重新运行视频脚本即可。
+- 英文版是中文版的 1:1 对译，只换语言不换画面：`--lang en` 让 `basel_problem.py` 走
+  `narration/en/`、`temp/chapters_en/`、`en-US-AriaNeural`（rate `+8%`），并设 `BASEL_LANG=en`；
+  `scenes/common.py` 的 `cn()`/`screen_title` 按这个环境变量查 `scenes/i18n.py` 取屏幕字。
+  表里没有的中文直接报错退出，英文版因此不会漏出中文；副标题若只是主标题的英文翻译，
+  在表里置 `None` 去掉，标题组仍保留两项以便 `title[1]` 继续可用。
+  英文行宽超过 `MAX_TEXT_WIDTH = 12.4` 时自动缩字号。同音替字只存在于 `narration/zh/`，不带进英文。
+- 节拍：中文版每屏动画都比旁白长 0.5–1.1s（个别屏余 2–5s 空镜）；英文同一句话通常说得更久，
+  超时的屏幕由合并时定格最后一帧补满，并在语音结束后再留 `TAIL_BEAT = 0.8` 秒。
+- 每屏结尾不得淡出到黑：超时配音冻住的是最后一帧，画面必须停在完整的那一张图上。
+  006 的五屏原本以 `FadeOut(everything), run_time=0.5` 收尾，已改成等长的 `self.wait(0.5)`，
+  两版共用，各屏总时长不变。
 
 ## 章节脚本
 
@@ -532,9 +545,13 @@ $S$，不必先求奇数幂次和再靠代数」。007-04 本身没有新的数�
 - 章节局部生成的结果留在 `temp/chapters/`，`output/` 中不出现分章视频。
 - `temp/chapters/001-intro/` 下能看到 `silent-<vhash>.mp4`、`intro-<ahash>.mp3`、`merged-<mhash>.mp4` 各一个，没有旧指纹残留。
 - 每个子片段内，无声动画总时长略大于旁白（多 0.5～1.1 秒），音频不得长于视频，否则合并会冻住最后一帧。
+  中文版必须满足这条；英文版是另一种语言的稿子，超时由合并补齐。
 - 缓存生效：源码与旁白都没改时，第二次完整运行不进入 Manim 渲染，终端逐段打印「复用整段」，
   最终视频仍按新写入时间出现在 `output/`。
 - `uv run python paper/build.py` 能生成七页 A4 中文 PDF，且日志无 `Missing character`。
 - `uv run python paper_geo/build.py` 能生成五页 A4 中文几何版 PDF，日志无 `Missing character` 与 Overfull。
 - `uv run python paper_en/build.py` 能用 pdfLaTeX 生成六页 A4 英文 PDF，无未定义引用/引文、无缺字。
+- `uv run ./basel_problem.py --lang en` 能生成完整英文视频 `output/basel_problem_final_en.mp4`：
+  屏幕上不出现汉字（`scenes/3b1b/` 里那些视频截图本身带的中文字幕除外），
+  每段旁白结束后至少留 0.5 秒，超时冻结不超过 4 秒，且冻住的最后一帧不是黑屏。
 - 视频与 PDF 中的中文、公式、数字均正常显示。

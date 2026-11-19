@@ -151,12 +151,8 @@ class BaselGeometryLight(Scene):
         self.wait(1.0)
         self.play(Write(light_formula), FadeIn(light_caption), run_time=0.9)
         self.wait(3.8)
-
-        everything = VGroup(
-            title, source, light_rays, near_screen, far_screen, far_cross,
-            near_label, far_label, light_formula, light_caption,
-        )
-        self.play(FadeOut(everything), run_time=0.5)
+        # 结尾不淡出，只把完整画面留半秒：英文版超时的语音冻住的是最后一帧，冻成黑屏就没法看了。
+        self.wait(0.5)
 
 
 class BaselGeometryPythagoras(Scene):
@@ -195,12 +191,7 @@ class BaselGeometryPythagoras(Scene):
         self.wait(1.0)
         self.play(Write(pythagoras_formula), FadeIn(pythagoras_note), run_time=0.9)
         self.wait(4.1)
-
-        everything = VGroup(
-            title, triangle, altitude, triangle_marks, triangle_labels,
-            pythagoras_formula, pythagoras_note,
-        )
-        self.play(FadeOut(everything), run_time=0.5)
+        self.wait(0.5)
 
 
 class BaselGeometryCircle(Scene):
@@ -277,13 +268,7 @@ class BaselGeometryCircle(Scene):
         self.wait(2.7)
         self.play(FadeIn(star_conclusion, shift=UP), run_time=0.9)
         self.wait(6.3)
-
-        everything = VGroup(
-            title, circle1, circle2, dot_O1, dot_O2,
-            perpendicular, altitude_pr, side_1, side_2, angle_R, angle_P,
-            star_R, star_S1, star_S2, circle_labels, column,
-        )
-        self.play(FadeOut(everything), run_time=0.5)
+        self.wait(0.5)
 
 
 class BaselGeometryDoubling(Scene):
@@ -389,12 +374,7 @@ class BaselGeometryDoubling(Scene):
         self.wait(3.3)
         self.play(FadeIn(conclusion, shift=UP), run_time=1.0)
         self.wait(6.1)
-
-        everything = VGroup(
-            title, circle1, circle2, dot_O1, dot_O2, label_P, label_O2,
-            small_lamps, big_lamps, diameters, angle_arcs, column,
-        )
-        self.play(FadeOut(everything), run_time=0.5)
+        self.wait(0.5)
 
 
 class BaselGeometryLimit(Scene):
@@ -536,13 +516,7 @@ class BaselGeometryLimit(Scene):
         self.wait(0.5)
         self.play(Write(f_limit), run_time=1.6)
         self.wait(0.7)
-
-        everything = VGroup(
-            title, circles, lamp_groups, guide, dot_P, label_P, column,
-            f_limit, limit_line, dot_origin, label_origin,
-            line_lamps, line_labels,
-        )
-        self.play(FadeOut(everything), run_time=0.5)
+        self.wait(0.5)
 
 
 TERM_COUNT = 5

@@ -1,7 +1,7 @@
 """巴塞尔问题科普视频生成器
 
 - 动画：Manim Community (v0.18+)
-- 语音：Edge TTS 中文女声
+- 语音：Edge TTS 中文女声（英文成片换英文女声）
 - 音视频合成：ffmpeg
 
 运行：
@@ -11,12 +11,13 @@
     uv run ./basel_problem.py --list
     uv run ./basel_problem.py --chapters intro
     uv run ./basel_problem.py --segments geometry_light,geometry_circle
+    uv run ./basel_problem.py --lang en      # 1:1 英文成片：旁白读 narration/en/，屏幕文字查 scenes/i18n.py
 
 多屏章节（geometry、summary）按「一屏一个子片段」拆分，每段单独配音与合并，
 再在章节内拼接，避免整章音视频内部不同步。
 
-中间产物仍按原来的层级放在 `temp/chapters/` 下，只是文件名里带上内容指纹（xxhash）：
-无声视频 = 场景源码（含它 import 的本地模块）+ 渲染参数，音频 = 旁白文本 + TTS 参数，
+中间产物仍按原来的层级放在 `temp/chapters/` 下（英文成片放 `temp/chapters_en/`），只是文件名里带上内容指纹（xxhash）：
+无声视频 = 场景源码（含它 import 的本地模块）+ 渲染参数 + 语言，音频 = 旁白文本 + TTS 参数，
 merged = 两者联合，章节拼接 = 本章各 merged 联合。指纹没变就直接复用现成文件，同目录里
 指纹过期的旧文件会被删掉；`temp/` 不再整体清空，想强制重来就 `rm -rf temp`。
 """
@@ -25,6 +26,7 @@ import argparse
 import ast
 import asyncio
 import inspect
+import os
 import re
 import shutil
 import subprocess
@@ -54,16 +56,34 @@ TEMP_DIR.mkdir(exist_ok=True)
 OUTPUT_DIR.mkdir(exist_ok=True)
 config.media_dir = str(TEMP_DIR / "manim_media")
 NARRATION_DIR = BASE_DIR / "narration"
-NARRATION_LANG = "zh"
 SCENE_MAP = dict(SCENES)
 SCENES_DIR = BASE_DIR / "scenes"
 
-VOICE = "zh-CN-XiaoxiaoNeural"
-TTS_RATE = "+0%"
+# 中文是默认语言，路径与音色沿用原来的写法；英文成片只是另一套参数。
+VOICES = {"zh": "zh-CN-XiaoxiaoNeural", "en": "en-US-AriaNeural"}
+TTS_RATES = {"zh": "+0%", "en": "+8%"}
 TTS_VOLUME = "+0%"
+TAIL_BEAT = 0.8
+LANG = "zh"
+SCRIPT_SEGMENTS: dict[str, str] = {}
 
 
-def load_chapter_narration(chapter_key: str, lang: str = NARRATION_LANG) -> dict[str, str]:
+def chapters_root() -> Path:
+    """分章中间产物按语言分目录，中英两套缓存互不覆盖。"""
+    return TEMP_DIR / ("chapters" if LANG == "zh" else f"chapters_{LANG}")
+
+
+def set_lang(lang: str) -> None:
+    """切换成片语言。场景在构造时才读 BASEL_LANG，所以必须在渲染前设好。"""
+    global LANG, SCRIPT_SEGMENTS
+    if lang not in VOICES:
+        raise SystemExit(f"未知语言: {lang}（可选 {', '.join(VOICES)}）")
+    LANG = lang
+    os.environ["BASEL_LANG"] = lang
+    SCRIPT_SEGMENTS = load_narration(lang)
+
+
+def load_chapter_narration(chapter_key: str, lang: str) -> dict[str, str]:
     """读取 narration/<lang>/<chapter>.md，返回 {子片段 key: TTS 逐字原稿}。"""
     path = NARRATION_DIR / lang / f"{chapter_key}.md"
     if not path.exists():
@@ -88,7 +108,7 @@ def load_chapter_narration(chapter_key: str, lang: str = NARRATION_LANG) -> dict
     return segments
 
 
-def load_narration(lang: str = NARRATION_LANG) -> dict[str, str]:
+def load_narration(lang: str) -> dict[str, str]:
     """按章节汇总语音原稿，并与 scenes 里的章节/子片段做一致性校验。"""
     narration: dict[str, str] = {}
     for chapter_key, _, chapter_segments in CHAPTERS:
@@ -105,9 +125,6 @@ def load_narration(lang: str = NARRATION_LANG) -> dict[str, str]:
             )
         narration.update(chapter_text)
     return narration
-
-
-SCRIPT_SEGMENTS = load_narration()
 
 
 def digest(*chunks: object) -> str:
@@ -148,7 +165,10 @@ def scene_source_files(scene_class: type) -> list[Path]:
 
 
 def render_settings_tag() -> str:
-    """影响无声视频的参数：Manim 版本、帧率、分辨率、背景色。"""
+    """影响无声视频的参数：Manim 版本、帧率、分辨率、背景色、屏幕文字的语言。
+
+    中文是默认，指纹里留空——这样加英文支持不会把中文成片的缓存整体作废。
+    """
     return "|".join(
         str(value)
         for value in (
@@ -157,6 +177,7 @@ def render_settings_tag() -> str:
             config.pixel_width,
             config.pixel_height,
             config.background_color,
+            "" if LANG == "zh" else LANG,
         )
     )
 
@@ -164,18 +185,23 @@ def render_settings_tag() -> str:
 def video_fingerprint(segment_key: str) -> str:
     scene_class = SCENE_MAP[segment_key]
     parts = [render_settings_tag(), scene_class.__name__]
+    i18n = SCENES_DIR / "i18n.py"
     for path in scene_source_files(scene_class):
+        if LANG == "zh" and path == i18n:
+            # 中文画面直接用手上的字符串，英文对译表改字不该作废中文缓存。
+            continue
         parts.append(str(path.relative_to(BASE_DIR)))
         parts.append(path.read_text(encoding="utf-8"))
     return digest(*parts)
 
 
 def audio_fingerprint(segment_key: str) -> str:
-    return digest(VOICE, TTS_RATE, TTS_VOLUME, SCRIPT_SEGMENTS[segment_key])
+    return digest(LANG, VOICES[LANG], TTS_RATES[LANG], TTS_VOLUME, SCRIPT_SEGMENTS[segment_key])
 
 
 def merged_fingerprint(segment_key: str, video_hash: str, audio_hash: str) -> str:
-    return digest(f"{segment_key}/merged", video_hash, audio_hash)
+    # 带上留白时长：改 TAIL_BEAT 属于改合并策略，旧的 merged 必须作废。
+    return digest(f"{segment_key}/merged", video_hash, audio_hash, f"{TAIL_BEAT:g}")
 
 
 def ready(path: Path) -> bool:
@@ -190,13 +216,13 @@ def prune(directory: Path, pattern: str, keep: Path) -> None:
 
 
 async def synthesize_audio(segment_key: str, mp3_path: Path) -> None:
-    """为某个片段生成中文语音。"""
+    """按当前语言为某个片段生成语音。"""
     mp3_path.parent.mkdir(parents=True, exist_ok=True)
     print(f"生成语音: {segment_key}")
     communicate = edge_tts.Communicate(
         text=SCRIPT_SEGMENTS[segment_key],
-        voice=VOICE,
-        rate=TTS_RATE,
+        voice=VOICES[LANG],
+        rate=TTS_RATES[LANG],
         volume=TTS_VOLUME,
     )
     await communicate.save(str(mp3_path))
@@ -223,7 +249,7 @@ def get_duration(file_path: Path, media_type: str = "audio") -> float:
 
 
 def merge_video_audio_with_ffmpeg(video_in: Path, audio_in: Path, video_out: Path) -> bool:
-    """按较长的一路补齐另一路，合并无声视频和语音。"""
+    """合并无声视频和语音：语音说完之后至少留 TAIL_BEAT 秒，不足就用最后一帧补齐。"""
     video_codec = "libx264"
     audio_codec = "aac"
 
@@ -237,7 +263,9 @@ def merge_video_audio_with_ffmpeg(video_in: Path, audio_in: Path, video_out: Pat
     print(f"视频时长: {v_duration:.2f} 秒")
     print(f"音频时长: {a_duration:.2f} 秒")
 
-    if a_duration > v_duration:
+    # 画面本来就比语音长的屏（排好的空镜）不动，只补不够呼吸的那几屏。
+    pad = a_duration + TAIL_BEAT - v_duration
+    if pad > 0:
         cmd = [
             "ffmpeg",
             "-y",
@@ -250,13 +278,12 @@ def merge_video_audio_with_ffmpeg(video_in: Path, audio_in: Path, video_out: Pat
                 "[0:v]split[v1][v2];"
                 "[v2]trim=start_frame=999999,setpts=N/FRAME_RATE/TB[blank];"
                 "[v1][blank]concat=n=2:v=1:a=0[vid];"
-                "[vid]tpad=stop_mode=clone:stop_duration=1000000[finalv]"
+                f"[vid]tpad=stop_mode=clone:stop_duration={pad:.3f}[finalv]"
             ),
             "-map",
             "[finalv]",
             "-map",
             "1:a",
-            "-shortest",
             "-c:v",
             video_codec,
             "-c:a",
@@ -344,6 +371,12 @@ def parse_args() -> argparse.Namespace:
         help="只生成指定子片段，逗号分隔，例如：fourier,geometry_circle",
     )
     parser.add_argument(
+        "--lang",
+        default="zh",
+        choices=sorted(VOICES),
+        help="成片语言：zh 中文（默认），en 英文 1:1 版",
+    )
+    parser.add_argument(
         "--list",
         action="store_true",
         help="列出全部章节和子片段后退出",
@@ -389,6 +422,7 @@ async def render_segment(segment_key: str, segment_dir: Path) -> tuple[Path, str
 
 async def main() -> None:
     args = parse_args()
+    set_lang(args.lang)
     chapter_map = {key: (number, segments) for key, number, segments in CHAPTERS}
 
     if args.list:
@@ -419,8 +453,7 @@ async def main() -> None:
                 if segment_key not in requested_set:
                     continue
                 segment_dir = (
-                    TEMP_DIR
-                    / "chapters"
+                    chapters_root()
                     / chapter_dir_name(chapter_key)
                     / "segments"
                     / f"{index:02d}-{segment_key}"
@@ -452,7 +485,7 @@ async def main() -> None:
     final_clips: list[Path] = []
     for chapter_key, segments in selected:
         print(f"\n处理章节: {chapter_dir_name(chapter_key)}")
-        chapter_dir = TEMP_DIR / "chapters" / chapter_dir_name(chapter_key)
+        chapter_dir = chapters_root() / chapter_dir_name(chapter_key)
         chapter_dir.mkdir(parents=True, exist_ok=True)
 
         segment_clips: list[Path] = []
@@ -488,7 +521,8 @@ async def main() -> None:
             print(f"  {clip}")
         return
 
-    final_output = OUTPUT_DIR / "basel_problem_final.mp4"
+    suffix = "" if LANG == "zh" else f"_{LANG}"
+    final_output = OUTPUT_DIR / f"basel_problem_final{suffix}.mp4"
     concatenate_videos(final_clips, final_output)
     print(f"\n最终视频已生成: {final_output}")
 
