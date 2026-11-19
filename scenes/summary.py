@@ -531,16 +531,20 @@ class BaselGeometryOnePic(BaselGeometryDirect):
     """007-04：圆与极限直线在 P 点重合，整个证明只剩一张图。"""
 
     FORMULA_PIECES = [
-        r"S=\frac{1}{2}",
-        r"\left(\frac{\pi^2}{2^2}",
-        r"+\ \frac{\pi^2}{4^2}",
-        r"+\ \frac{\pi^2}{8^2}",
-        r"+\ \cdots\ \right)",
-        r"=\ \frac{\pi^2}{6}",
+        (r"S=\frac{1}{2}\Bigl(", WHITE),
+        (r"\frac{\pi^2}{2^2}", EXTRA),
+        (r"+\ \frac{\pi^2}{4^2}", EXTRA),
+        (r"+\ \frac{\pi^2}{8^2}", EXTRA),
+        (r"+\ \cdots", EXTRA),
+        (r"\Bigr)", WHITE),
+        (r"=\ \frac{\pi^2}{6}", ACCENT),
     ]
 
     def build_formula(self) -> VGroup:
-        pieces = VGroup(*[MathTex(piece).scale(0.8) for piece in self.FORMULA_PIECES])
+        pieces = VGroup()
+        for tex, color in self.FORMULA_PIECES:
+            piece = MathTex(tex).scale(0.8).set_color(color)
+            pieces.add(piece)
         pieces.arrange(RIGHT, buff=0.16)
         pieces.move_to(DOWN * 2.3)
         return pieces
@@ -553,25 +557,20 @@ class BaselGeometryOnePic(BaselGeometryDirect):
         origin[1].next_to(origin[0], DOWN, buff=0.14)
         line_block.shift(P - origin[0].get_center())
 
-        picture = VGroup(circles, kids, added, guide, line_block)
-        picture.scale(0.78).move_to(UP * 0.55)
+        VGroup(circles, kids, added, guide, line_block).scale(0.78).move_to(UP * 0.55)
         formula = self.build_formula()
-        formula[-1].set_color(ACCENT)
 
         self.add(title[0])
-        # 旁白：最后把整条路线收进一张图 / 五个圆都切在 P 点
+        # 旁白：最后把整条路线收进一张图
         self.play(FadeIn(title[1]), run_time=0.8)
-        self.wait(2.5)
+        self.wait(0.7)
         self.play(FadeIn(circles), FadeIn(kids), run_time=1.4)
         self.wait(0.6)
 
-        # 旁白：每翻一倍，只在正对面补上一盏灯
-        self.play(FadeIn(added), run_time=0.9)
-        self.play(
-            LaggedStart(*[Indicate(lamp, scale_factor=1.5) for lamp in added], lag_ratio=0.3),
-            run_time=1.7,
-        )
-        self.wait(0.8)
+        # 旁白：每次把圆翻倍时，在 P 的正对面补上一盏灯
+        self.wait(1.9)
+        self.play(FadeIn(added), run_time=1.2)
+        self.wait(1.2)
 
         # 旁白：周长无限翻倍之后
         self.play(Create(guide), run_time=1.2)
@@ -589,37 +588,20 @@ class BaselGeometryOnePic(BaselGeometryDirect):
         )
         self.wait(0.6)
 
-        # 旁白：上面读的是补上的灯 / 下面读的是整数点上的灯 / 两边合起来正好是 S
-        self.play(
-            LaggedStart(*[Indicate(lamp, scale_factor=1.5) for lamp in added], lag_ratio=0.15),
-            run_time=1.4,
-        )
-        self.wait(0.9)
-        self.play(
-            LaggedStart(
-                *[Indicate(lamp, scale_factor=1.4) for lamp in line_lamps], lag_ratio=0.05
-            ),
-            run_time=1.6,
-        )
-        self.wait(0.6)
-        self.play(
-            Indicate(added, color=EXTRA), Indicate(line_lamps, color=EXTRA), run_time=1.8
-        )
-        self.wait(0.55)
+        # 旁白：我们就直接从几何上得到了 S 的等比数列求值表达式
+        self.play(Write(formula[0]), run_time=0.8)
+        self.wait(0.1)
+        self.play(Write(formula[1]), run_time=0.7)
+        self.wait(0.1)
+        self.play(Write(formula[2]), run_time=0.7)
+        self.wait(0.1)
+        self.play(Write(formula[3]), run_time=0.7)
+        self.wait(0.1)
+        self.play(Write(formula[4]), run_time=0.7)
+        self.wait(0.1)
+        self.play(Write(formula[5]), run_time=0.6)
+        self.wait(0.3)
 
-        # 旁白逐段读出长表达式：S 等于二分之一 / 括号派平方除以二平方 / ……
-        self.play(Write(formula[0]), run_time=1.0)
-        self.wait(1.5)
-        self.play(Write(formula[1]), run_time=1.4)
-        self.wait(1.05)
-        self.play(Write(formula[2]), run_time=1.2)
+        # 旁白：从而算出了答案
+        self.play(Write(formula[6]), run_time=1.2)
         self.wait(1.1)
-        self.play(Write(formula[3]), run_time=1.2)
-        self.wait(0.7)
-        self.play(Write(formula[4]), run_time=0.9)
-        self.wait(0.25)
-        self.play(Write(formula[5]), run_time=1.2)
-        self.wait(0.8)
-
-        # 旁白：几何自己就给出了药求的表达式
-        self.wait(4.2)
