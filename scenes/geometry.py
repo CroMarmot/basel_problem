@@ -102,6 +102,23 @@ class BaselGeometryLight(Scene):
         source = star_at(source_pt, radius=0.11)
         near_screen = quad(near_points)
         far_screen = quad(far_points)
+        # 虚线十字把大接收面切成四块，和「面积 4A」对上。
+        far_cross = VGroup(
+            DashedLine(
+                (far_points[0] + far_points[1]) / 2,
+                (far_points[3] + far_points[2]) / 2,
+                color=WHITE,
+                stroke_width=1.6,
+                stroke_opacity=0.55,
+            ),
+            DashedLine(
+                (far_points[0] + far_points[3]) / 2,
+                (far_points[1] + far_points[2]) / 2,
+                color=WHITE,
+                stroke_width=1.6,
+                stroke_opacity=0.55,
+            ),
+        )
         light_rays = VGroup(
             *[
                 DashedLine(source_pt, point, color=WHITE, stroke_width=1.2, stroke_opacity=0.35)
@@ -130,13 +147,13 @@ class BaselGeometryLight(Scene):
         self.play(FadeIn(source), Create(light_rays), run_time=1.0)
         self.play(Create(near_screen), FadeIn(near_label), run_time=0.8)
         self.wait(1.0)
-        self.play(Create(far_screen), FadeIn(far_label), run_time=0.8)
+        self.play(Create(far_screen), Create(far_cross), FadeIn(far_label), run_time=1.0)
         self.wait(1.0)
         self.play(Write(light_formula), FadeIn(light_caption), run_time=0.9)
-        self.wait(3.3)
+        self.wait(3.8)
 
         everything = VGroup(
-            title, source, light_rays, near_screen, far_screen,
+            title, source, light_rays, near_screen, far_screen, far_cross,
             near_label, far_label, light_formula, light_caption,
         )
         self.play(FadeOut(everything), run_time=0.5)
@@ -164,9 +181,6 @@ class BaselGeometryPythagoras(Scene):
             MathTex("b").scale(0.75).move_to((B + C) / 2 + RIGHT * 0.25),
             MathTex("h").scale(0.75).move_to((C + H) / 2 + RIGHT * 0.18),
             MathTex("c").scale(0.75).move_to((A + B) / 2 + DOWN * 0.22),
-            MathTex("C").scale(0.6).next_to(C, UP, buff=0.08),
-            MathTex("A").scale(0.6).next_to(A, DOWN + LEFT, buff=0.06),
-            MathTex("B").scale(0.6).next_to(B, DOWN + RIGHT, buff=0.06),
         )
         pythagoras_formula = MathTex(
             r"\frac{1}{h^2}", "=", r"\frac{1}{a^2}", "+", r"\frac{1}{b^2}"
