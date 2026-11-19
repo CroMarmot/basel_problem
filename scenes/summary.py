@@ -1,5 +1,6 @@
 import numpy as np
 from manim import (
+    BLACK,
     DOWN,
     LEFT,
     RIGHT,
@@ -131,6 +132,12 @@ class BaselGeometrySummary(Scene):
         title = screen_title(METHOD_TITLE + "？", "几何方法的四步总结")
         steps = self.build_steps()
         big, smalls = self.build_pictures()
+        route_note = cn(
+            "能搜到的几何讲解，都是先求奇数项平方倒数和，\n再用代数算出 S", 0.46
+        )
+        route_note.move_to(UP * 0.62)
+        note_backdrop = SurroundingRectangle(route_note, buff=0.24, stroke_width=0)
+        note_backdrop.set_fill(BLACK, opacity=0.78)
 
         self.play(Write(title[0]), FadeIn(title[1]), run_time=0.8)
         self.wait(2.2)
@@ -154,15 +161,19 @@ class BaselGeometrySummary(Scene):
         self.play(Write(steps[3][1]), run_time=1.2)
         self.wait(2.0)
         self.play(steps[3][1].animate.set_color(ACCENT), run_time=0.7)
-        self.wait(2.05)
+        self.wait(0.45)
 
+        # 旁白：这套几何路线出自 Wästlund，科普版本来自 3Blue1Brown
         self.play(FadeIn(big), run_time=1.4)
-        self.wait(2.65)
+        self.wait(1.05)
         self.play(
             LaggedStart(*[FadeIn(picture) for picture in smalls], lag_ratio=0.35),
             run_time=2.6,
         )
-        self.wait(2.3)
+        # 截图之后压一张静默的字卡：这一句不配音，只给读。
+        self.wait(0.3)
+        self.play(FadeIn(note_backdrop), FadeIn(route_note), run_time=1.0)
+        self.wait(1.8)
 
 
 class BaselGeometryQuestion(Scene):
@@ -187,10 +198,7 @@ class BaselGeometryQuestion(Scene):
             MathTex(r"\frac{3}{4}S=\frac{\pi^{2}}{8}").scale(0.72),
             MathTex(r"S=\frac{\pi^{2}}{6}").scale(0.72),
         ).arrange(DOWN, buff=0.16)
-        box = SurroundingRectangle(block, color=WHITE, buff=0.22, stroke_width=2)
-        box.set_stroke(opacity=0.5)
-        box.set_fill(opacity=0)
-        return VGroup(block, box)
+        return block
 
     def build_result(self) -> VGroup:
         block = VGroup(
@@ -211,23 +219,20 @@ class BaselGeometryQuestion(Scene):
         row.move_to(DOWN * 0.45)
 
         # 「先求奇数幂次和，再用代数算出 S」这一整段，就是想要绕开的部分。
-        detour = VGroup(odd, algebra[0])
+        detour = VGroup(odd, algebra)
         cover = SurroundingRectangle(VGroup(odd, algebra), color=WHITE, buff=0.26)
         cover.set_fill(opacity=0.26)
         cover.set_stroke(width=2, opacity=0.45)
 
-        frame = SurroundingRectangle(geometry, color=WHITE, buff=0.2, stroke_width=2)
-        same_note = cn(
-            "能搜到的几何方法，都是先得到奇数幂次和，\n再代数计算 S，和 3Blue1Brown 完全一样",
-            0.34,
-        ).set_opacity(0.6)
+        # 路线怎么走已经在 007-01 的字卡里说过了，这里只补那句判断：别人也照抄 3Blue1Brown。
+        same_note = cn("网上能搜到的二次讲解，和 3Blue1Brown 那期完全一样", 0.4).set_opacity(0.6)
         same_note.move_to(DOWN * 2.95)
         doubt = MathTex("?").scale(1.6).set_color(ACCENT)
-        doubt.move_to(algebra[1].get_corner(UL) + LEFT * 0.3 + UP * 0.1)
+        doubt.move_to(algebra.get_corner(UL) + LEFT * 0.3 + UP * 0.1)
         line_y = odd[1].get_center()[1]
         box_left, box_right = algebra[1].get_left()[0], algebra[1].get_right()[0]
         to_odd = Arrow(
-            (frame.get_right()[0], line_y, 0.0),
+            (geometry.get_right()[0], line_y, 0.0),
             (odd[1].get_left()[0], line_y, 0.0),
             buff=0.1,
             stroke_width=3,
@@ -248,7 +253,7 @@ class BaselGeometryQuestion(Scene):
             max_stroke_width_to_length_ratio=8,
         )
         bypass = Arrow(
-            frame.get_top() + UP * 0.1,
+            geometry.get_top() + UP * 0.1,
             result.get_top() + UP * 0.1,
             color=ACCENT,
             buff=0.2,
@@ -261,17 +266,16 @@ class BaselGeometryQuestion(Scene):
 
         self.add(title[0])
         self.play(FadeIn(title[1]), run_time=0.9)
-        self.wait(1.92)
+        self.wait(2.0)
 
-        self.play(FadeIn(geometry), Create(frame), run_time=1.2)
-        self.wait(4.48)
+        self.play(FadeIn(geometry), run_time=1.2)
+        self.wait(1.9)
 
-        # 旁白说到「只是重新整理了一遍」时不再上字，画面留白给下一句的方框变色。
-        self.wait(3.43)
+        # 「重新整理了一遍」那一句不上字，画面留白。
+        self.wait(3.3)
 
-        self.play(frame.animate.set_color(ACCENT), run_time=0.8)
         self.play(FadeIn(odd), Create(to_odd), run_time=1.1)
-        self.wait(2.68)
+        self.wait(2.2)
 
         self.play(
             FadeIn(algebra),
@@ -280,23 +284,23 @@ class BaselGeometryQuestion(Scene):
             Create(out_of_algebra),
             run_time=1.6,
         )
-        self.wait(1.27)
+        self.wait(1.4)
 
+        # 旁白：而网络搜索到的相关二次讲解的视频，都停在这同一条路线上
         self.play(FadeIn(same_note), run_time=0.9)
-        self.wait(4.52)
+        self.wait(4.9)
 
         self.play(FadeIn(doubt), run_time=0.7)
-        self.wait(3.39)
+        self.wait(3.4)
 
         self.play(
             detour.animate.set_opacity(0.3),
-            algebra[1].animate.set_stroke(opacity=0.25),
             FadeIn(cover),
             Create(bypass),
             FadeIn(bypass_label),
             run_time=1.8,
         )
-        self.wait(3.0)
+        self.wait(2.4)
 
 
 class BaselGeometryDirect(Scene):
@@ -304,7 +308,9 @@ class BaselGeometryDirect(Scene):
 
     STAGES = 5
     R0 = 0.14
-    STEP = 0.38
+    # 圆上弧长 1 对应的世界长度：半径 R0·2^k 的圆周长 2^{k+1}，所以每单位弧长 = π·R0。
+    # 极限直线必须用同一个尺度，否则 007-04 叠在一起时弦长会比弧长还长。
+    STEP = np.pi * R0
     NOTE_AT = LEFT * 4.2 + UP * 2.35
 
     def note(self, text: str):
@@ -362,7 +368,7 @@ class BaselGeometryDirect(Scene):
 
     def build_line(self) -> VGroup:
         offsets = [v for v in range(-7, 8) if v]
-        line = Line(LEFT * 3.15, RIGHT * 3.15, color=WHITE, stroke_width=2)
+        line = Line(LEFT * 3.35, RIGHT * 3.35, color=WHITE, stroke_width=2)
         dot = Dot(radius=0.05, color=WHITE)
         origin = VGroup(dot, MathTex("P").scale(0.44).next_to(dot, UP, buff=0.12))
         lamps = VGroup(*[star_at(RIGHT * self.STEP * v, radius=0.05) for v in offsets])
