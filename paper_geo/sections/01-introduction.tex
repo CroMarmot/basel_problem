@@ -1,0 +1,55 @@
+\section{引言}
+
+巴塞尔问题要求算出所有正整数平方的倒数之和：
+\begin{equation}
+  S=\sum_{n=1}^{\infty}\frac{1}{n^{2}}
+   =1+\frac{1}{2^{2}}+\frac{1}{3^{2}}+\frac{1}{4^{2}}+\cdots .
+  \label{eq:basel}
+\end{equation}
+蒙戈利在 1644 年提出这个问题，欧拉在 1735 年算得它为 $\pi^{2}/6$。等式左边只由整数构成，
+右边却是一个圆周率常数，于是自然会期待这一等式有一个几何读法。
+
+这样的读法确实存在：Wästlund 在一篇短文里给出了只用欧几里得几何的证明 \cite{wastlund}，
+后来的科普视频又让它流传到更广的读者中 \cite{threeblueonebrown}。整套构造只用到圆、
+弦、直角和光的平方反比律：圆上的灯点看成点光源，两圆的公共切点 $P$ 看成观察点，
+一项 $\frac{1}{d^{2}}$ 读成距离 $d$ 处那盏灯送到 $P$ 的亮度。圆每翻倍一次，
+每盏灯就被大圆上两盏等效灯替换掉，$P$ 处的总亮度不变；极限下圆压成一条直线，
+灯落在奇数整数处。
+
+把构造归一化：周长为 $2$ 的圆上只有一盏灯，摆在 $P$ 的正对面，到 $P$ 的距离为 $\frac{2}{\pi}$。
+这张图交出的是奇数项。
+
+\begin{theorem}[Wästlund]\label{thm:wastlund}
+在上述归一化下，几何构造给出
+\begin{equation}
+  \sum_{k=0}^{\infty}\frac{1}{(2k+1)^{2}}=\frac{\pi^{2}}{8}.
+  \label{eq:odd-sum}
+\end{equation}
+\end{theorem}
+
+要从定理 \ref{thm:wastlund} 得到 $S$，需要一句代数：偶数项之和是 $\frac14 S$，
+于是 $\frac34 S=\frac{\pi^{2}}{8}$。这一句是整个论证里唯一的非几何步骤，
+也正是本文要省掉的那一步。
+
+\begin{theorem}[本文]\label{thm:direct}
+把翻倍规则改成：每一轮先把灯按原样映射到大圆上，再在大圆上 $P$ 的正对面补一盏灯。
+这样极限直线上每个非零整数点都亮着灯，它们送到 $P$ 的亮度等于各轮补上的灯的亮度，
+\begin{equation}
+  2S=\sum_{k=0}^{\infty}\frac{\pi^{2}}{4^{k+1}}=\frac{\pi^{2}}{3},
+  \qquad\text{于是}\qquad
+  S=\frac{\pi^{2}}{6}.
+  \label{eq:direct}
+\end{equation}
+\end{theorem}
+
+每轮只需补一盏灯，而且它永远落在同一个位置：正对面正是等效替换产生不出来的那一处，
+因为它的原像得是 $P$ 本身的一盏灯。其余整数位置各被填上一次，不多不少。
+
+等式 \eqref{eq:basel} 与 $\pi^{2}/6$ 早已有很多条到达路线：Kalman 的综述收了六条
+\cite{kalman}，Matsuoka 给出一条初等的 \cite{matsuoka}；与下面这张图气质最接近的，
+是 Dumont 那个启发式论证——Komornik 把它补严，并把 Gregory--Leibniz 级数与巴塞尔级数
+系在一起 \cite{komornik}。本文要改动的都不是这几条路线，只针对 Wästlund 的这一支构造
+\cite{wastlund}。
+
+第 2 节复述 Wästlund 的证明；第 3 节给出改动与定理 \ref{thm:direct} 的证明，
+那是本文唯一的新内容。

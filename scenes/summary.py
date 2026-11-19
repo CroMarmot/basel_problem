@@ -616,46 +616,62 @@ class BaselGeometryOnePic(BaselGeometryDirect):
 
 
 class BaselGeometryRefs(Scene):
-    """007-05：片尾只列两条参考链接，几何证明原文与科普讲解。"""
+    """007-05：片尾只列两条参考链接，各带自己的原标题。"""
 
     ENTRIES = [
-        ("几何证明原文", "https://www.math.chalmers.se/~wastlund/Cosmic.pdf", "2010-12-08"),
-        ("科普讲解视频", "https://www.youtube.com/watch?v=d-o3eB9sfls", "2018-03-03"),
+        (
+            "几何证明原文",
+            "Summing inverse squares by euclidean geometry · Johan Wästlund",
+            "https://www.math.chalmers.se/~wastlund/Cosmic.pdf",
+            "2010-12-08",
+        ),
+        (
+            "科普讲解视频",
+            "Why is pi here? And why is it squared? A geometric answer to the Basel problem",
+            "https://www.youtube.com/watch?v=d-o3eB9sfls",
+            "2018-03-03",
+        ),
     ]
     URL_FONT = "DejaVu Sans Mono"
     URL_SIZE = 24
+    TITLE_SCALE = 0.42
 
     def build_rows(self) -> VGroup:
         rows = VGroup()
-        for label, url, date in self.ENTRIES:
+        for label, title, url, date in self.ENTRIES:
             link = Text(url, font=self.URL_FONT, font_size=self.URL_SIZE, color=WHITE)
             when = Text(
                 date, font=self.URL_FONT, font_size=self.URL_SIZE, color=WHITE
             ).set_opacity(0.6)
             urls = VGroup(link, when).arrange(RIGHT, buff=0.7)
             rows.add(
-                VGroup(cn(label, 0.5), urls).arrange(DOWN, aligned_edge=LEFT, buff=0.24)
+                VGroup(
+                    cn(label, 0.5),
+                    cn(title, self.TITLE_SCALE).set_opacity(0.85),
+                    urls,
+                ).arrange(DOWN, aligned_edge=LEFT, buff=0.2)
             )
-        rows.arrange(DOWN, aligned_edge=LEFT, buff=0.9)
-        rows.move_to(DOWN * 0.35)
+        rows.arrange(DOWN, aligned_edge=LEFT, buff=0.8)
+        rows.move_to(DOWN * 0.2)
         return rows
 
     def construct(self):
         title = screen_title("参考链接", "Basel Problem · References")
         rows = self.build_rows()
 
-        self.play(FadeIn(title[0]), FadeIn(title[1]), run_time=0.9)
-        self.wait(1.7)
-        # 每条链接：先题名，再出地址，念到日期时日期才落下来。
+        # 旁白只念题名（2.59 / 6.10 / 9.96 三句），标题与日期都不念，跟着各自的地址落下来。
         first, second = rows
-        self.play(FadeIn(first[0]), run_time=0.6)
-        self.play(FadeIn(first[1][0]), run_time=1.6)
-        self.wait(1.4)
-        self.play(FadeIn(first[1][1]), run_time=0.8)
-        self.wait(1.4)
-        self.play(FadeIn(second[0]), run_time=0.6)
-        self.play(FadeIn(second[1][0]), run_time=1.6)
-        self.wait(1.8)
-        self.play(FadeIn(second[1][1]), run_time=0.8)
-        self.wait(1.2)
-        self.wait(0.8)
+        self.play(FadeIn(title[0]), FadeIn(title[1]), run_time=0.9)
+        self.wait(0.7)
+        self.play(FadeIn(first[0]), run_time=0.5)
+        self.play(FadeIn(first[1]), run_time=0.8)
+        self.play(FadeIn(first[2][0]), run_time=1.2)
+        self.wait(0.5)
+        self.play(FadeIn(first[2][1]), run_time=0.6)
+        self.wait(0.9)
+        self.play(FadeIn(second[0]), run_time=0.5)
+        self.play(FadeIn(second[1]), run_time=0.9)
+        self.play(FadeIn(second[2][0]), run_time=1.3)
+        self.wait(0.4)
+        self.play(FadeIn(second[2][1]), run_time=0.6)
+        self.wait(1.0)

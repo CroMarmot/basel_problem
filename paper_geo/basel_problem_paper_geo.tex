@@ -1,0 +1,77 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage{fontspec}
+\usepackage{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{tikz}
+\usetikzlibrary{calc}
+\usepackage{float}
+
+\geometry{margin=2.3cm}
+
+\IfFontExistsTF{Noto Serif CJK SC}
+  {\setmainfont{Noto Serif CJK SC}}
+  {\setmainfont{Droid Sans Fallback}}
+\IfFontExistsTF{Noto Sans CJK SC}
+  {\setsansfont{Noto Sans CJK SC}}
+  {\setsansfont{Droid Sans Fallback}}
+\IfFontExistsTF{Noto Sans Mono CJK SC}
+  {\setmonofont{Noto Sans Mono CJK SC}}
+  {\setmonofont{Droid Sans Fallback}}
+
+\XeTeXlinebreaklocale "zh"
+\XeTeXlinebreakskip = 0pt plus 1pt minus 0.1pt
+\linespread{1.15}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue,
+  urlcolor=blue,
+  citecolor=blue
+}
+
+\definecolor{lampA}{RGB}{198,43,42}
+\definecolor{lampB}{RGB}{44,93,197}
+
+\newtheorem{theorem}{定理}[section]
+\newtheorem{lemma}[theorem]{引理}
+\newtheorem{proposition}[theorem]{命题}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{定义}
+
+\renewcommand{\proofname}{证明}
+\renewcommand{\abstractname}{摘要}
+\renewcommand{\refname}{参考文献}
+
+\title{\textbf{巴塞尔问题：在 Wästlund 的几何证明上多走一步}\\[0.3em]
+\large 把 $\displaystyle\sum_{n=1}^{\infty}\frac{1}{n^{2}}$ 直接从图上读出来}
+\author{YeXiaoRain\thanks{独立研究者，四川成都，中国，\texttt{yexiaorain@gmail.com}}}
+\date{2026 年 11 月 20 日}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Wästlund 对巴塞尔问题的几何证明反复把圆翻倍，并把每一盏灯换成大圆上两盏等效灯，
+观察点 $P$ 处的总亮度因此始终不变；极限下这张图交出的是正\emph{奇数}项的平方倒数和，
+还要再补一次代数运算才能回到原级数。本文改动翻倍这一步：每轮在大圆上 $P$ 的正对面补上一盏灯。
+正对面恰好是等效替换唯一产生不出来的位置，所以每轮恰好只缺一盏；补上的灯到 $P$ 的距离逐轮翻倍，
+贡献排成等比级数，而极限直线上每个非零整数点都亮着灯。两侧亮度相等，
+$\sum_{n\ge1}1/n^{2}=\pi^{2}/6$ 便直接从图上读出，不再绕道奇数项。
+\end{abstract}
+
+\begin{center}
+\small
+\textbf{MSC 2020：} 51M04（主）；40A05，11A25，01A50\\[0.3em]
+\textbf{关键词：} 巴塞尔问题；几何证明；平方反比；反勾股定理；Wästlund 的构造
+\end{center}
+
+\input{sections/01-introduction.tex}
+\input{sections/02-wastlund.tex}
+\input{sections/03-one-more-step.tex}
+\input{sections/04-references.tex}
+
+\end{document}

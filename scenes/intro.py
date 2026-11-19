@@ -11,7 +11,7 @@ class BaselIntro(Scene):
             r"S=",
             r"\sum_{n=1}^{\infty}\frac{1}{n^2}",
             "=",
-            r"1+\frac{1}{4}+\frac{1}{9}+\frac{1}{16}+\cdots",
+            r"1+\frac{1}{2^2}+\frac{1}{3^2}+\frac{1}{4^2}+\cdots",
             "=",
             "?",
         ).scale(0.8)

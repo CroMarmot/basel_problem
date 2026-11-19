@@ -447,7 +447,7 @@ class BaselGeometryLimit(Scene):
         column.move_to(RIGHT * 3.3 + UP * 1.6)
 
         f_limit = MathTex(
-            r"2\left(1+\frac{1}{9}+\frac{1}{25}+\cdots\right)=\frac{\pi^2}{4}"
+            r"2\left(1+\frac{1}{3^2}+\frac{1}{5^2}+\cdots\right)=\frac{\pi^2}{4}"
         ).scale(0.8)
         f_limit.move_to(RIGHT * 3.3 + DOWN * 1.6)
 
@@ -549,8 +549,9 @@ TERM_COUNT = 5
 GRID_COLUMNS = 4 * TERM_COUNT + 1
 
 
-def _term(den: int) -> str:
-    return "1" if den == 1 else r"\frac{1}{%d}" % den
+def _term(n: int) -> str:
+    # 平方不展开：三行对齐靠的是「同一个 n」，写成 1/9 就看不出它落在 1/3^2 那一列。
+    return "1" if n == 1 else r"\frac{1}{%d^{2}}" % n
 
 
 def _grid_row(prefix: str, slots: dict, rhs: str = "") -> str:
@@ -562,7 +563,7 @@ def _grid_row(prefix: str, slots: dict, rhs: str = "") -> str:
 def _odd_row() -> str:
     slots = {}
     for k in range(1, TERM_COUNT + 1):
-        slots[4 * k - 3] = _term((2 * k - 1) ** 2)
+        slots[4 * k - 3] = _term(2 * k - 1)
         if k > 1:
             slots[4 * k - 4] = "+"
     slots[GRID_COLUMNS - 1] = "+"
@@ -573,7 +574,7 @@ def _odd_row() -> str:
 def _whole_row() -> str:
     slots = {}
     for k in range(1, 2 * TERM_COUNT + 1):
-        slots[2 * k - 1] = _term(k**2)
+        slots[2 * k - 1] = _term(k)
         if k < 2 * TERM_COUNT:
             slots[2 * k] = "+"
     slots[GRID_COLUMNS - 1] = "+"
@@ -584,7 +585,7 @@ def _whole_row() -> str:
 def _even_row() -> str:
     slots = {}
     for k in range(1, TERM_COUNT + 1):
-        slots[4 * k - 1] = _term((2 * k) ** 2)
+        slots[4 * k - 1] = _term(2 * k)
         if k > 1:
             slots[4 * k - 2] = "+"
     slots[GRID_COLUMNS - 1] = "+"

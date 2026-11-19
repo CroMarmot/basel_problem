@@ -27,7 +27,7 @@
 
 - 最终视频：`output/basel_problem_final.mp4`，只在完整运行时生成。
 - 单章测试：`temp/chapters/<三位编号>-<章节名>/merged-<chash>.mp4`，不写入 `output/`。
-- 论文：`output/basel_problem_paper.pdf`（中文，XeLaTeX）、`output/basel_problem_paper_en.pdf`（英文，pdfLaTeX，投 arXiv）
+- 论文：`output/basel_problem_paper.pdf`（中文，XeLaTeX）、`output/basel_problem_paper_geo.pdf`（中文几何版，XeLaTeX）、`output/basel_problem_paper_en.pdf`（英文，pdfLaTeX，投 arXiv）
 - 中间产物：`temp/chapters/<三位编号>-<章节名>/silent-<vhash>.mp4`、`<章节名>-<ahash>.mp3`、`merged-<mhash>.mp4`
 - 一屏一个子片段：多屏章节拆成若干片段后，产物放在 `temp/chapters/<三位编号>-<章节名>/segments/<两位序号>-<片段名>/`，章节内按序号拼接。每屏的动画与旁白单独配音、单独补齐，避免整章内部音画漂移。
 - 文件名里的 `<vhash>`/`<ahash>`/`<mhash>`/`<chash>` 都是内容指纹（xxhash），算法见「技术约束」；同目录下指纹过期的旧产物会被删掉，每种成品只留当前那一份。
@@ -46,6 +46,8 @@
 - 辅助性正文统一走 `scenes/common.py` 的 `body(text)`（`BODY_SCALE = 0.5`），不许超过主标题字号；
   需要临时改色或加粗时再退回 `cn(text, scale)`。公式（MathTex）按版面需要可以更大，
   例如 `001-intro` 的等式用 0.8，但同一屏那句「所有正整数平方的倒数之和是多少？」用 `body`。
+- 级数的项一律**不展开平方**：写 $\frac{1}{2^2},\frac{1}{3^2},\frac{1}{n^2}$，不写 $\frac14,\frac19$；
+  视频、三版论文同此约定。系数例外——$\frac14 S$、$\frac{1}{1-\frac14}$ 里的 $\frac14$ 是倍数不是项。
 - `temp/chapters/` 下的目录使用三位数字前缀，保证文件管理器按章节顺序排序。
 - 中间产物按输入内容取 xxhash，指纹直接写进原来的文件名（`silent-<vhash>.mp4`、
   `<片段名>-<ahash>.mp3`、`merged-<mhash>.mp4`、章节的 `merged-<chash>.mp4`），层级结构不变：
@@ -77,7 +79,7 @@
 
 $$
 S=\sum_{n=1}^{\infty}\frac{1}{n^2}
-=1+\frac{1}{4}+\frac{1}{9}+\frac{1}{16}+\cdots=?
+=1+\frac{1}{2^2}+\frac{1}{3^2}+\frac{1}{4^2}+\cdots=?
 $$
 
 不显示任何答案。问题描述与公式合成一组，居中在标题下方的空白区里。
@@ -249,7 +251,7 @@ $$
 1. 「初始：周长 2，灯在 P 的正对面」；
 2. 「总亮度：」配 $\frac{1}{d^2}=\frac{1}{(2/\pi)^2}=\frac{\pi^2}{4}$；
 3. 极限图示：水平直线，$P$ 在原点，灯落在 $\pm1,\pm3,\pm5,\pm7$，数字标在点下方；
-4. 等式 $2\left(1+\frac{1}{9}+\frac{1}{25}+\cdots\right)=\frac{\pi^2}{4}$，留到旁白说到「如下等式」时才写出。
+4. 等式 $2\left(1+\frac{1}{3^2}+\frac{1}{5^2}+\cdots\right)=\frac{\pi^2}{4}$，留到旁白说到「如下等式」时才写出。
 
 出现顺序保持从上到下，所以极限图示放在等式上方。翻倍过程中右侧不再加文字：「周长与灯数一起翻倍」「每一步总亮度都不变」这类话由动画与旁白承担。旁白已删去「几何到此结束，剩下的只有代数」，画面不再出现这一句。
 
@@ -263,11 +265,15 @@ $$
 
 三行级数用同一个对齐网格排版，相同的数落在同一列，逐行淡入：
 
-- 第一行 奇数项：`1+1/9+1/25+1/49+1/81+\cdots=\pi^2/8`，左侧不加前缀。
-- 第二行 要求的 S：`S=1+1/4+1/9+1/16+\cdots+1/100+\cdots`，其中的 `1`、`1/9`、`1/25`、`1/49`、`1/81` 与第一行纵向对齐。
-- 第三行 偶数项：`\frac14S=1/4+1/16+1/36+1/64+1/100+\cdots`，每一项与第二行的同一数值同列对齐：`1/4` 在 `1/4` 之下，`1/16` 在 `1/16` 之下，依此类推。
+- 第一行 奇数项：`1+1/3^2+1/5^2+1/7^2+1/9^2+\cdots=\pi^2/8`，左侧不加前缀。
+- 第二行 要求的 S：`S=1+1/2^2+1/3^2+1/4^2+\cdots+1/10^2+\cdots`，其中的 `1`、`1/3^2`、`1/5^2`、`1/7^2`、`1/9^2` 与第一行纵向对齐。
+- 第三行 偶数项：`\frac14S=1/2^2+1/4^2+1/6^2+1/8^2+1/10^2+\cdots`，每一项与第二行的同一个分母同列对齐：`1/2^2` 在 `1/2^2` 之下，`1/4^2` 在 `1/4^2` 之下，依此类推。
 
-第二行与第三行之间画 5 个斜箭头：从第二行的 `1`、`1/4`、`1/9`、`1/16`、`1/25` 分别指向第三行的 `1/4`、`1/16`、`1/36`、`1/64`、`1/100`，即每一项乘 `\frac14` 之后落到的那一项；每个箭头上方标注 `\times\frac14`，标注排在箭头起点的正下方、第二行那一项的正下面，避免被别的箭头压到。这一组箭头和标注在念到「每一项都是 S 中对应项的四分之一」时依次浮现。
+**平方一律不展开**：三行都写成 $\frac{1}{n^2}$ 的样子，不写成 $\frac14,\frac19$。对齐要表达的是
+「同一个 $n$」与「$n\to2n$」，把平方算出来反而看不出这一层关系；`_term(n)` 与论文里的数组都按这个约定生成。
+系数 $\frac14 S$、$\frac{1}{1-\frac14}$ 里的 $\frac14$ 是倍数，不是级数的项，保持展开写法。
+
+第二行与第三行之间画 5 个斜箭头：从第二行的 `1`、`1/2^2`、`1/3^2`、`1/4^2`、`1/5^2` 分别指向第三行的 `1/2^2`、`1/4^2`、`1/6^2`、`1/8^2`、`1/10^2`，即每一项乘 `\frac14` 之后落到的那一项；每个箭头上方标注 `\times\frac14`，标注排在箭头起点的正下方、第二行那一项的正下面，避免被别的箭头压到。这一组箭头和标注在念到「每一项都是 S 中对应项的四分之一」时依次浮现。
 
 每行都写满五项，省略号表示继续。三行之后在下方写出最后一步
 
@@ -432,14 +438,18 @@ $\Bigr)$ 白色，末段 $=\ \frac{\pi^2}{6}$ 黄色。括号用 `\Bigl(`/`\Bigr
 **画面**（`007-summary` 的第 5 屏，片尾卡）
 
 标题「参考链接」＋副标题「Basel Problem · References」。这一屏是片尾卡，**不沿用** 007 前四屏那句主标题。
-正文只有两组，左对齐自上而下，每组三件东西：题名、地址、日期。
+正文只有两组，左对齐自上而下，每组四件东西：中文题名、作品原标题、地址、日期。
 
-1. 「几何证明原文」`https://www.math.chalmers.se/~wastlund/Cosmic.pdf` `2010-12-08`；
-2. 「科普讲解视频」`https://www.youtube.com/watch?v=d-o3eB9sfls` `2018-03-03`。
+1. 「几何证明原文」`Summing inverse squares by euclidean geometry · Johan Wästlund`
+   `https://www.math.chalmers.se/~wastlund/Cosmic.pdf` `2010-12-08`；
+2. 「科普讲解视频」`Why is pi here? And why is it squared? A geometric answer to the Basel problem`
+   `https://www.youtube.com/watch?v=d-o3eB9sfls` `2018-03-03`。
 
-题名走 `cn(..., 0.5)` 白字；地址与日期用 `DejaVu Sans Mono` 24pt——最宽的一行 12.44，居中后左右各留约 0.9，
+中文题名走 `cn(..., 0.5)` 白字；原标题 `cn(..., 0.42)` 压到 0.85 透明度（长的那条 10.9 宽，仍不做出画的最宽行）；
+地址与日期用 `DejaVu Sans Mono` 24pt——最宽的一行 12.44，居中后左右各留约 0.9，
 再大就要出画。日期排在地址右边（`buff=0.7`）并压到 0.6 透明度当灰字。全屏只有白色，不用强调色。
-旁白念到日期时日期才淡入，所以每组的节奏固定是「题名 → 地址 → 灰日期」。旁白 14.38 秒，视频 15.20 秒。
+旁白只念题名（三句，结束于 2.59 / 6.10 / 9.96），**日期不念**——地址落定稍停后灰日期自己淡入，
+所以每组的节奏固定是「题名 → 地址 → 灰日期」。旁白 9.96 秒，视频 10.80 秒。
 
 
 ## 论文结构
@@ -451,20 +461,39 @@ XeLaTeX + fontspec + Noto CJK，A4，正文按章拆在 `paper/sections/`，由�
 `Missing character`。成品 `output/basel_problem_paper.pdf`，**目前 7 页**（标题页含摘要、MSC/关键词与目录）。
 标题页署名 YeXiaoRain（独立研究者，四川成都），日期写死 2026 年 11 月 20 日，
 摘要末尾一句点出本文自己的贡献在 6.2，正文第 1 节末尾同样声明「本文只有 6.2 是新的」，
-文末有 `\section*{致谢}` 感谢 Wästlund 与 3Blue1Brown。
+并加一段「更早的初等/几何推导」的说明；文末有 `\section*{致谢}` 感谢 Wästlund 与 3Blue1Brown。
+这一版与视频对齐，三条路线都在，所以 Euler/Ahlfors/Apostol 三条参考文献都有 `\cite` 落到正文里
+（第 3、4、5 节），参考文献共八条。
+
+### 几何版中文（`paper_geo/`）
+
+与英文版**逐节对应**的中文稿：去掉收敛性、欧拉乘积、傅里叶三节，只留 Wästlund 的几何路线加本文的补灯一步。
+`paper_geo/basel_problem_paper_geo.tex` + `paper_geo/sections/01-introduction.tex`～`04-references.tex`
++ `paper_geo/build.py`（XeLaTeX 两遍 + 字体与 `Missing character` 检查），成品
+`output/basel_problem_paper_geo.pdf`，**目前 5 页**。标题「巴塞尔问题：在 Wästlund 的几何证明上多走一步」，
+副题「把 $\sum 1/n^2$ 直接从图上读出来」，摘要与关键词按英文版 1:1 对译。
+结构与英文版同：定理 1.1（Wästlund）/ 定理 1.2（本文）、定义 2.1、引理 2.2–2.4、引理 3.1、命题 3.2、
+四张图、致谢、五条参考文献（`04-references.tex` 整体套 `{\small ...}`，为的是让五条留在第 5 页内，
+不出现只有两行的孤立页）。中文版 `paper/` 保持与视频一致（七个文件、含三条路线），两版共用同一套 TikZ 图。
+
+三版共用的两条补充：引言末尾一段「更早的初等/几何推导」（Kalman 1993、Matsuoka 1961、
+Komornik 2022 三条参考文献），说明本文只针对 Wästlund 这一支；`fig:onepic` 的 `scale` 从
+$0.55$ 提到 $0.8$，让那张「一张图讲完整个证明」在页面上真正占得住。
 
 ### 英文版（`paper_en/`，投 arXiv 用）
 
 **必须用 pdfLaTeX**：arXiv 的 TeXLive 里没有 Noto CJK，中文版原样上传会构建失败。
 `paper_en/basel_problem_paper_en.tex` + `paper_en/sections/` + `paper_en/build.py`
-（pdflatex 两遍，检查未定义引用与缺字），成品 `output/basel_problem_paper_en.pdf`，**目前 5 页 A4**。
+（pdflatex 两遍，检查未定义引用与缺字），成品 `output/basel_problem_paper_en.pdf`，**目前 6 页 A4**
+（第 6 页整页是参考文献）。
 标题 `One More Step on Wästlund's Geometric Proof of the Basel Problem`，
+副题 `Reading $\sum_{n=1}^{\infty}1/n^2$ off a Picture`，
 MSC 2020 主 51M04、次 40A05/11A25/01A50，关键词五个。
-英文版**只保留几何路线**：`01-introduction.tex`（问题、贡献声明、Theorem 1.1 Wästlund 与
+英文版**只有几何路线**（收敛性、欧拉乘积、傅里叶三节确认不进正式版，也不补收敛性说明——
+$\sum 1/n^2$ 的绝对收敛按 Wästlund 原文当默认事实用）：`01-introduction.tex`（问题、贡献声明、Theorem 1.1 Wästlund 与
 Theorem 1.2 本文）、`02-wastlund.tex`（六小节，全部改写进 `lemma/proof` 环境：Definition 2.1 灯/亮度/等效/正对面、
 反勾股、等亮度替换、翻倍、极限、回到巴塞尔）、`03-one-more-step.tex`（缺位引理、补灯亮度命题、
-Theorem 1.2 的证明、一张图的静图、致谢）、`04-references.tex`（只剩 Wästlund 与 3Blue1Brown 两条，
-Euler/Ahlfors/Apostol 已删）。收敛性、欧拉乘积、傅里叶三节在英文版里暂时不译——是否最终去掉待确认。
+Theorem 1.2 的证明、一张图的静图、致谢）、`04-references.tex`（Wästlund、3Blue1Brown 加三条「更多证明见」）。
 两版共用同一套 TikZ 图与同一尺度约定。
 Wästlund 条目的著录信息按 PDF 首页核对过：题名小写 `Summing inverse squares by euclidean geometry`，
 Chalmers University of Technology，2010-12-08，未刊文稿；arXiv 上检索不到这篇（Wästlund 名下 23 条无 Basel 相关），
@@ -506,5 +535,6 @@ $S$，不必先求奇数幂次和再靠代数」。007-04 本身没有新的数�
 - 缓存生效：源码与旁白都没改时，第二次完整运行不进入 Manim 渲染，终端逐段打印「复用整段」，
   最终视频仍按新写入时间出现在 `output/`。
 - `uv run python paper/build.py` 能生成七页 A4 中文 PDF，且日志无 `Missing character`。
-- `uv run python paper_en/build.py` 能用 pdfLaTeX 生成五页 A4 英文 PDF，无未定义引用/引文、无缺字。
+- `uv run python paper_geo/build.py` 能生成五页 A4 中文几何版 PDF，日志无 `Missing character` 与 Overfull。
+- `uv run python paper_en/build.py` 能用 pdfLaTeX 生成六页 A4 英文 PDF，无未定义引用/引文、无缺字。
 - 视频与 PDF 中的中文、公式、数字均正常显示。

@@ -46,6 +46,9 @@ uv run ./basel_problem.py --segments fourier,geometry_circle
 # 重建论文 PDF（XeLaTeX 两遍 + 字体与 Missing character 检查）
 uv run python paper/build.py
 
+# 中文几何版（只讲 Wästlund + 补灯一步，与英文版逐节对应）
+uv run python paper_geo/build.py
+
 # 重建英文版论文 PDF（pdfLaTeX 两遍，arXiv 用）
 uv run python paper_en/build.py
 ```
@@ -112,8 +115,9 @@ uv run ./basel_problem.py --chapters geometry
 最终 PDF 输出到：
 
 ```text
-output/basel_problem_paper.pdf      # 中文版
-output/basel_problem_paper_en.pdf   # 英文版（arXiv）
+output/basel_problem_paper.pdf       # 中文版（与视频一致：三条路线）
+output/basel_problem_paper_geo.pdf   # 中文几何版（与英文版逐节对应）
+output/basel_problem_paper_en.pdf    # 英文版（arXiv）
 ```
 
 英文版走 `paper_en/build.py`，用 **pdfLaTeX** 而不是 XeLaTeX：arXiv 的 TeXLive 没有 Noto CJK，
@@ -160,12 +164,22 @@ basel-problem/
 │   ├── build.py              # XeLaTeX 编译脚本
 │   ├── arxiv-en-gaps.md      # 英文版投稿前待确认的结构性缺口（交流用，不进 PDF）
 │   └── sections/             # 按章节拆分的论文正文
+├── paper_geo/
+│   ├── basel_problem_paper_geo.tex
+│   ├── build.py              # XeLaTeX 编译脚本（中文几何版）
+│   └── sections/             # 与 paper_en/ 逐节对应的中文正文
 ├── paper_en/
 │   ├── basel_problem_paper_en.tex
 │   ├── build.py              # pdfLaTeX 编译脚本（arXiv 可用）
 │   └── sections/             # 英文版正文，只有几何路线
+├── docs/                     # 制作过程的对话记录存档（不参与构建）
 ├── output/                   # 生成的视频与 PDF（忽略）
 ├── temp/                     # 分章中间产物与 Manim 缓存（忽略）
 ├── pyproject.toml
 └── uv.lock
 ```
+
+## 关于制作过程
+
+动画脚本、画面代码与三版论文的排版改写是在 AI 编程助手的协助下完成的，主要对话记录存档在
+`docs/part_qwen3.8_flash.md`。数学内容——构造、证明与结论——由作者本人负责，AI 不参与署名。

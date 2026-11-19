@@ -22,3 +22,10 @@ paper/*.synctex.gz
 
 # Generated paper PDF
 paper/*.pdf
+
+paper_geo/*.aux
+paper_geo/*.log
+paper_geo/*.out
+paper_geo/*.toc
+paper_geo/*.synctex.gz
+paper_geo/*.pdf

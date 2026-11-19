@@ -1,0 +1,80 @@
+\section{多走一步：每轮只补一盏灯}\label{sec:one-more-step}
+
+第 2 节交出的只有奇数项。我们把翻倍规则改动一处：每一轮先把小圆上的灯按引理
+\ref{lem:replacement} 映射到大圆上，再在大圆上 $P$ 的正对面补一盏灯。
+
+\begin{lemma}[缺位]\label{lem:missing}
+设第 $k$ 轮圆的周长为 $C=2^{k+1}$，半径 $\frac{2^{k}}{\pi}$，灯落在从 $P$ 量的
+弧距 $s=1,2,\dots,C-1$ 处。按引理 \ref{lem:doubling} 替换之后，大圆上的灯占满整数弧距
+$1,\dots,2C-1$ 中除 $s=C$ 以外的每一处，而 $s=C$ 正是 $P$ 的正对面；第 $k$ 轮圆上没有任何灯
+能被映射到那里。
+\end{lemma}
+
+\begin{proof}
+第 $k$ 轮圆上弧距 $s$ 的灯，被换成大圆上过它的直径的两端，即弧距 $s$ 与 $s+C$；
+于是 $1,\dots,2C-1$ 中除 $C$ 之外每处恰好被填一次。弧距 $C$ 那点位于过 $P$ 的直径另一端，
+也就是连心线；这条线在第 $k$ 轮圆上的另一个点是 $P$ 本身，那里没有灯。所以正对面没有原像。
+\end{proof}
+
+\begin{proposition}[补上的灯的亮度]\label{prop:added}
+第 $k$ 轮补上的那盏灯到 $P$ 的距离是 $\frac{2^{k+1}}{\pi}$，按式 \eqref{eq:inverse-square}
+贡献亮度 $\frac{\pi^{2}}{4^{k+1}}$；各轮补的灯合起来是
+\begin{equation}
+  B=\sum_{k=0}^{\infty}\frac{\pi^{2}}{4^{k+1}}
+   =\frac{\pi^{2}}{4}\cdot\frac{1}{1-\frac14}
+   =\frac{\pi^{2}}{3}.
+  \label{eq:supplement-brightness}
+\end{equation}
+\end{proposition}
+
+\begin{proof}
+$P$ 到正对面的距离就是第 $k$ 轮圆的直径 $\frac{2^{k+1}}{\pi}$；剩下的和是公比 $\frac14$
+的等比级数。
+\end{proof}
+
+\begin{proof}[定理 \ref{thm:direct} 的证明]
+半径趋于无穷时，圆压成过 $P$ 的切线，弦长趋于弧长，而由引理 \ref{lem:missing}
+每个整数位置都被点亮：极限直线上全体非零整数处都有灯，到 $P$ 的距离依次是
+$1,2,3,\dots$（图 \ref{fig:onepic}）。它们送到 $P$ 的亮度是
+$\sum_{n\neq0}\frac{1}{n^{2}}=2S$。由引理 \ref{lem:replacement}，替换不改变 $P$ 处的亮度，
+所以这一总亮度就等于各轮不得不补上的那些灯的亮度 \eqref{eq:supplement-brightness}，
+即 $2S=\frac{\pi^{2}}{3}$，亦即 $S=\frac{\pi^{2}}{6}$。
+\end{proof}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=0.8, every node/.style={font=\small}]
+  \coordinate (P) at (0,0);
+  % 圆与直线共用一个尺度：每单位弧长（每单位距离）取 0.7，
+  % 于是周长 $2^{k+1}$ 的圆半径是 $0.7\cdot 2^k/\pi$。
+  \draw[thick] (0,0.446) circle (0.446);
+  \draw[thick] (0,0.891) circle (0.891);
+  \draw[thick] (0,1.783) circle (1.783);
+  \draw[thin,dashed] (0,0)--(0,3.7);
+  \foreach \s [evaluate=\s as \ang using {180*\s/8-90}] in {1,2,3,4,5,6,7,9,10,11,12,13,14,15}
+    \fill[lampB] (0,1.783) + (\ang:1.783) circle (2.2pt);
+  \fill[lampA] (0,0.891) circle (2.8pt);
+  \fill[lampA] (0,1.783) circle (2.8pt);
+  \fill[lampA] (0,3.565) circle (2.8pt);
+  \draw[thick] (-5.1,0)--(5.1,0);
+  \foreach \x/\lab in {-4.9/-7,-4.2/-6,-3.5/-5,-2.8/-4,-2.1/-3,-1.4/-2,-0.7/-1,0.7/1,1.4/2,2.1/3,2.8/4,3.5/5,4.2/6,4.9/7} {
+    \fill[lampB] (\x,0) circle (2.2pt);
+    \node[below,font=\footnotesize] at (\x,-0.05) {$\lab$};
+  }
+  \fill (P) circle (1.8pt);
+  \node[above left] at (P) {$P$};
+\end{tikzpicture}
+\caption{一张图讲完整个证明：翻倍的圆与极限直线按同一尺度重合于 $P$，红色是每轮补上的灯。}
+\label{fig:onepic}
+\end{figure}
+
+与第 2.4--2.5 节的区别只有一点：那里每轮都是纯粹的等效替换，总亮度守恒，
+极限下读出的是奇数项；这里亮度逐轮累加，代价是每轮补一盏灯，换来的则是
+式 \eqref{eq:basel} 本身出现在图上，而不是它的某个子级数。
+式 \eqref{eq:supplement-brightness} 的每一项都能在图上指着一盏灯说出来，
+这正是式 \eqref{eq:odd-even} 那次代数做不到的。
+
+\section*{致谢}
+
+几何构造出自 Johan Wästlund 的短文，本文只是在他的图上多走了一步；
+3Blue1Brown 的视频是让这一构造直观起来的科普版本，本文的整理也受益于它。
