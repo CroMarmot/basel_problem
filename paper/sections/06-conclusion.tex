@@ -43,16 +43,21 @@ $\frac14$」才解得出来。把第 5.4 节的翻倍过程稍加改动，就能
 于是新圆上除弧距 $C$ 以外的每个整数位置都有灯，而 $C$ 恰是大圆上 $P$ 的正对面。
 
 补上的灯到 $P$ 的距离是 $\frac{2^{k+1}}{\pi}$，按式 \eqref{eq:inverse-square}
-贡献亮度 $\frac{\pi^{2}}{2^{2k+2}}$。把各轮补的灯加起来，$P$ 点的总亮度是等比级数
+贡献亮度 $\frac{\pi^{2}}{(2^{k+1})^{2}}$。把各轮补的灯加起来，$P$ 点的总亮度是等比级数
 \begin{equation}
-  B=\sum_{k=0}^{\infty}\frac{\pi^{2}}{4^{k+1}}
+  B=\frac{\pi^{2}}{2^{2}}+\frac{\pi^{2}}{4^{2}}+\frac{\pi^{2}}{8^{2}}+\cdots
    =\frac{\pi^{2}}{4}\cdot\frac{1}{1-\frac14}
    =\frac{\pi^{2}}{3}.
   \label{eq:supplement-brightness}
 \end{equation}
+每一项都是图 \ref{fig:onepic} 里某一盏红灯送到 $P$ 的亮度，一轮一项，按圆画出的顺序排下来。
 另一方面，半径趋于无穷时圆压成过 $P$ 的直线，灯落在全体非零整数处，到 $P$ 的距离依次是
-$1,2,3,\dots$（图 \ref{fig:onepic}），同一点亮度因此就是 $2S$。两式相等，
-$S=\frac{\pi^{2}}{6}$。
+$1,2,3,\dots$，同一点亮度因此就是 $2S$。两式相等，
+\begin{equation*}
+  S=\frac{B}{2}
+   =\frac{1}{2}\left(\frac{\pi^{2}}{2^{2}}+\frac{\pi^{2}}{4^{2}}+\frac{\pi^{2}}{8^{2}}+\cdots\right)
+   =\frac{\pi^{2}}{6}.
+\end{equation*}
 
 \begin{figure}[H]
 \centering
@@ -60,12 +65,20 @@ $S=\frac{\pi^{2}}{6}$。
   \coordinate (P) at (0,0);
   % 圆与直线共用一个尺度：每单位弧长（每单位距离）取 0.7，
   % 于是周长 $2^{k+1}$ 的圆半径是 $0.7\cdot 2^k/\pi$。
+  \draw[thick] (0,0.223) circle (0.223);
   \draw[thick] (0,0.446) circle (0.446);
   \draw[thick] (0,0.891) circle (0.891);
   \draw[thick] (0,1.783) circle (1.783);
   \draw[thin,dashed] (0,0)--(0,3.7);
+  % 每层圆上的灯：周长 $2^{k+1}$ 的圆在弧距 $s=1,\dots,2^{k+1}-1$ 处各一盏，
+  % 正对面 $s=2^k$ 那处由红灯补上；周长 $2$ 的最里层圆只有正对面那一盏。
+  \foreach \s [evaluate=\s as \ang using {180*\s/2-90}] in {1,3}
+    \fill[lampB] (0,0.446) + (\ang:0.446) circle (2.2pt);
+  \foreach \s [evaluate=\s as \ang using {180*\s/4-90}] in {1,2,3,5,6,7}
+    \fill[lampB] (0,0.891) + (\ang:0.891) circle (2.2pt);
   \foreach \s [evaluate=\s as \ang using {180*\s/8-90}] in {1,2,3,4,5,6,7,9,10,11,12,13,14,15}
     \fill[lampB] (0,1.783) + (\ang:1.783) circle (2.2pt);
+  \fill[lampA] (0,0.446) circle (2.8pt);
   \fill[lampA] (0,0.891) circle (2.8pt);
   \fill[lampA] (0,1.783) circle (2.8pt);
   \fill[lampA] (0,3.565) circle (2.8pt);
@@ -77,14 +90,15 @@ $S=\frac{\pi^{2}}{6}$。
   \fill (P) circle (1.8pt);
   \node[above left] at (P) {$P$};
 \end{tikzpicture}
-\caption{一张图讲完整个证明：圆与极限直线按同一尺度重合于 $P$，红色是每轮补上的灯。}
+\caption{红色是每轮补上的灯。}
 \label{fig:onepic}
 \end{figure}
 
 这条路线与第 5.5、5.6 节的区别只在一点：那里每轮做纯等效替换，总亮度守恒，
 极限下读出的是奇数项之和；这里让亮度逐轮累加，代价是每轮补一盏灯，换来的却是
 $\sum\frac{1}{n^{2}}$ 本身出现在图上。它和第 4 节帕塞瓦尔等式给出的是同一个级数，
-只是这里的每一项都能指着一盏灯说出来。
+只是这里的每一项都能指着一盏灯说出来。图一旦画好，剩下的只有公比 $\frac14$
+的等比级数求和。
 
 \section*{致谢}
 

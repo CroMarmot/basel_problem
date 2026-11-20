@@ -41,11 +41,13 @@ images on the larger circle, add one lamp at the point of that circle antipodal 
 every nonzero integer point of the limiting line carries a lamp, the brightness they deliver
 at $P$ equals the brightness of the added lamps, and
 \begin{equation}
-  2S=\sum_{k=0}^{\infty}\frac{\pi^{2}}{4^{k+1}}=\frac{\pi^{2}}{3},
-  \qquad\text{so}\qquad
-  S=\frac{\pi^{2}}{6}.
+  S=\frac{1}{2}\left(\frac{\pi^{2}}{2^{2}}+\frac{\pi^{2}}{4^{2}}+\frac{\pi^{2}}{8^{2}}+\cdots\right)
+   =\frac{\pi^{2}}{6}.
   \label{eq:direct}
 \end{equation}
+The factor $\frac12$ is there because the line carries each distance twice, at $n$ and at $-n$:
+what the picture delivers is $2S$. The term of round $k$ is the brightness $\pi^{2}/(2^{k+1})^{2}$
+of the single lamp added in that round, which stands at distance $2^{k+1}/\pi$ from $P$.
 \end{theorem}
 
 Only one lamp has to be added each round, and it always sits in the same place: the antipodal
@@ -56,10 +58,17 @@ Equalities \eqref{eq:basel} and $\pi^{2}/6$ have been reached by many different 
 Kalman's survey collects six of them \cite{kalman} and Matsuoka gives an elementary one
 \cite{matsuoka}. Closest in spirit to the picture below is Dumont's heuristic argument,
 made rigorous by Komornik, which ties the Gregory--Leibniz and Basel sums together
-\cite{komornik}. As far as the author could find, in the literature and in the popular videos
-alike, no earlier figure of this kind reads off the whole series itself: the geometric accounts
-on record stop at a sub-series and close with algebra. None of these is the route we modify:
-what follows concerns only W\"astlund's construction \cite{wastlund}.
+\cite{komornik}.
+
+Every account of this geometric route that we were able to find has the same shape. W\"astlund's
+own note \cite{wastlund}, the geometric-proof section of the Wikipedia article \cite{wikipedia},
+and the video version by 3Blue1Brown \cite{threeblueonebrown} all carry the doubling to the
+limit, read off the brightness of the lamps at the odd integers, and then recover $S$ from the
+observation that the even terms are a quarter of it. As far as the author could find, no earlier
+figure of this kind gives the whole series itself: each of these accounts stops at a sub-series
+and closes with the same two lines of algebra, which is what \eqref{eq:direct} avoids. None of
+them is the route we modify: what follows concerns only W\"astlund's construction
+\cite{wastlund}.
 
 Section \ref{sec:wastlund} reproduces W\"astlund's proof; Section \ref{sec:one-more-step}
 contains the modification and the proof of Theorem \ref{thm:direct}, which is the only new

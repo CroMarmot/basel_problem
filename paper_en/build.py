@@ -37,7 +37,12 @@ def run_pdflatex() -> None:
     for round_no in (1, 2):
         print(f"pdfLaTeX 第 {round_no} 次编译...")
         result = subprocess.run(
-            cmd, cwd=PAPER_DIR, capture_output=True, text=True, check=False
+            cmd,
+            cwd=PAPER_DIR,
+            capture_output=True,
+            text=True,
+            errors="replace",
+            check=False,
         )
         if result.returncode != 0:
             print(result.stdout[-4000:])

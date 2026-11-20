@@ -476,37 +476,52 @@ XeLaTeX + fontspec + Noto CJK，A4，正文按章拆在 `paper/sections/`，由�
 摘要末尾一句点出本文自己的贡献在 6.2，正文第 1 节末尾同样声明「本文只有 6.2 是新的」，
 并加一段「更早的初等/几何推导」的说明；文末有 `\section*{致谢}` 感谢 Wästlund 与 3Blue1Brown。
 这一版与视频对齐，三条路线都在，所以 Euler/Ahlfors/Apostol 三条参考文献都有 `\cite` 落到正文里
-（第 3、4、5 节），参考文献共八条。
+（第 3、4、5 节），参考文献共九条（引言末尾那段点名讲法形状的 `wikipedia` 一条也在内）。
 
 ### 几何版中文（`paper_geo/`）
 
 与英文版**逐节对应**的中文稿：去掉收敛性、欧拉乘积、傅里叶三节，只留 Wästlund 的几何路线加本文的补灯一步。
 `paper_geo/basel_problem_paper_geo.tex` + `paper_geo/sections/01-introduction.tex`～`04-references.tex`
 + `paper_geo/build.py`（XeLaTeX 两遍 + 字体与 `Missing character` 检查），成品
-`output/basel_problem_paper_geo.pdf`，**目前 5 页**。标题「巴塞尔问题：在 Wästlund 的几何证明上多走一步」，
-副题「把 $\sum 1/n^2$ 直接从图上读出来」，摘要与关键词按英文版 1:1 对译。
+`output/basel_problem_paper_geo.pdf`，**目前 5 页**。标题「从一张图上读出的巴塞尔问题」，
+副题「Wästlund 加倍构造中多出的一盏灯，与剩下只需计算的等比级数」，摘要与关键词按英文版 1:1 对译。
 结构与英文版同：定理 1.1（Wästlund）/ 定理 1.2（本文）、定义 2.1、引理 2.2–2.4、引理 3.1、命题 3.2、
-四张图、致谢、五条参考文献（`04-references.tex` 整体套 `{\small ...}`，为的是让五条留在第 5 页内，
-不出现只有两行的孤立页）。中文版 `paper/` 保持与视频一致（七个文件、含三条路线），两版共用同一套 TikZ 图。
+四张图、致谢、六条参考文献（`04-references.tex` 整体套 `{\footnotesize ...}`）。中文版 `paper/` 保持与视频一致（七个文件、含三条路线），两版共用同一套 TikZ 图。`fig:onepic` 三版都紧跟定理证明，不浮动。
 
-三版共用的两条补充：引言末尾一段「更早的初等/几何推导」（Kalman 1993、Matsuoka 1961、
-Komornik 2022 三条参考文献），说明本文只针对 Wästlund 这一支；`fig:onepic` 的 `scale` 从
-$0.55$ 提到 $0.8$，让那张「一张图讲完整个证明」在页面上真正占得住。
+三版共用的三条补充：引言末尾一段「更早的初等/几何推导」（Kalman 1993、Matsuoka 1961、
+Komornik 2022 三条参考文献）；同段另起一句点名「同一条几何路线的所有讲法都停在同一个形状」——
+Wästlund 原文、维基词条的 Geometric proof 一节（新增 `wikipedia` 参考文献）、3Blue1Brown 的视频，
+都是做到极限读出奇数项、再用「偶数项占四分之一」解回 $S$，本文省掉的正是这个收尾；
+`fig:onepic` 的 `scale` 从 $0.55$ 提到 $0.8$，让那张「一张图讲完整个证明」在页面上真正占得住。
 
-### 英文版（`paper_en/`，投 arXiv 用）
+主论断的写法三版统一：不写 $2S=\sum\pi^{2}/4^{k+1}=\pi^{2}/3$ 再「亦即」，而是直接把
+$S=\frac12\left(\frac{\pi^{2}}{2^{2}}+\frac{\pi^{2}}{4^{2}}+\frac{\pi^{2}}{8^{2}}+\cdots\right)=\frac{\pi^{2}}{6}$
+摆成结论式。`fig:onepic` 的题注三版都只留一句「红色是每轮补上的灯。」，不在图注里重述等式，
+也不写「一张图讲完整个证明」这类评价句——图与 `eq:direct` 挨在同一页上，重复反而稀释。收束段
+只保留「`eq:basel` 本身出现在图上」「`eq:supplement-brightness` 的每一项都能在图上指着一盏灯
+说出来」「剩下的只有公比 $\frac14$ 的等比级数求和」三句，删掉「而不是它的某个子级数」
+「这正是式 `eq:odd-even` 那次代数做不到的」「不必再建立两个子级数之间的关系，也不必把 $S$
+解出来」这三处同义反复。
 
-**必须用 pdfLaTeX**：arXiv 的 TeXLive 里没有 Noto CJK，中文版原样上传会构建失败。
+### 英文版（`paper_en/`，投稿用）
+
+**必须用 pdfLaTeX**：arXiv 的 TeXLive 里没有 Noto CJK，中文版原样上传会构建失败；投 Zenodo /
+Preprints.org 时直接交这份 PDF，不需要平台编译。
 `paper_en/basel_problem_paper_en.tex` + `paper_en/sections/` + `paper_en/build.py`
-（pdflatex 两遍，检查未定义引用与缺字），成品 `output/basel_problem_paper_en.pdf`，**目前 6 页 A4**
+（pdflatex 两遍，检查未定义引用与缺字，日志按 `errors="replace"` 解码——`W\"astlund` 会在日志里
+留下 latin-1 的 0xE4 字节），成品 `output/basel_problem_paper_en.pdf`，**目前 6 页 A4**
 （第 6 页整页是参考文献）。
-标题 `One More Step on Wästlund's Geometric Proof of the Basel Problem`，
-副题 `Reading $\sum_{n=1}^{\infty}1/n^2$ off a Picture`，
+标题 `The Basel Problem Read off a Single Picture`，
+副题 `One Extra Lamp in Wästlund's Doubling, and a Geometric Series Left to Sum`。
+标题不带显示公式（PDF 文本抽取会把 `\sum` 打散成噪声，检索不到），主标题只放论断、
+人名与机制放副题，`Direct` 一词不用（数学里它指非反证）。
 MSC 2020 主 51M04、次 40A05/11A25/01A50，关键词五个。
 英文版**只有几何路线**（收敛性、欧拉乘积、傅里叶三节确认不进正式版，也不补收敛性说明——
 $\sum 1/n^2$ 的绝对收敛按 Wästlund 原文当默认事实用）：`01-introduction.tex`（问题、贡献声明、Theorem 1.1 Wästlund 与
 Theorem 1.2 本文）、`02-wastlund.tex`（六小节，全部改写进 `lemma/proof` 环境：Definition 2.1 灯/亮度/等效/正对面、
 反勾股、等亮度替换、翻倍、极限、回到巴塞尔）、`03-one-more-step.tex`（缺位引理、补灯亮度命题、
-Theorem 1.2 的证明、一张图的静图、致谢）、`04-references.tex`（Wästlund、3Blue1Brown 加三条「更多证明见」）。
+Theorem 1.2 的证明、一张图的静图、致谢）、`04-references.tex`（Wästlund、3Blue1Brown、Wikipedia 的
+Geometric proof 一节，加三条「更多证明见」，共六条）。
 两版共用同一套 TikZ 图与同一尺度约定。
 Wästlund 条目的著录信息按 PDF 首页核对过：题名小写 `Summing inverse squares by euclidean geometry`，
 Chalmers University of Technology，2010-12-08，未刊文稿；arXiv 上检索不到这篇（Wästlund 名下 23 条无 Basel 相关），
@@ -524,14 +539,19 @@ Chalmers University of Technology，2010-12-08，未刊文稿；arXiv 上检索�
    对应视频 006 章的六屏。
 7. `06-conclusion.tex` 结语，两个小节：
    - 6.1「几何方法的总结」：四条初等事实的列举，对应视频 007-01。
-   - 6.2「直接读出 $S$：每翻一倍只补一盏灯」：对应视频 007-03/04，全小节只留一个编号公式——补灯贡献
-     $B=\sum_{k\ge0}\frac{\pi^{2}}{4^{k+1}}=\frac{\pi^{2}}{3}$（式 `eq:supplement-brightness`）；
-     极限直线上同一点的亮度 $2S$ 用一句话说完，不再单列公式，两式相等即 $S=\frac{\pi^{2}}{6}$。
+   - 6.2「直接读出 $S$：每翻一倍只补一盏灯」：对应视频 007-03/04，编号公式只有一个——补灯贡献
+     $B=\frac{\pi^{2}}{2^{2}}+\frac{\pi^{2}}{4^{2}}+\frac{\pi^{2}}{8^{2}}+\cdots=\frac{\pi^{2}}{3}$
+     （式 `eq:supplement-brightness`，一轮一项，按圆画出的顺序）；极限直线上同一点的亮度 $2S$
+     用一句话说完，随后用不编号的 `equation*` 把结论摆成
+     $S=\frac{B}{2}=\frac12\left(\frac{\pi^{2}}{2^{2}}+\frac{\pi^{2}}{4^{2}}+\cdots\right)=\frac{\pi^{2}}{6}$，
+     与视频 007-04 屏底那行式子同形。
      「为什么分裂不出正对面那一盏」「为什么恰好只缺一盏」这类论证不写，正文只陈述结果。
-     配图 `fig:onepic` 就是 007-04 那张静图，题注缩成一句「一张图讲完整个证明：圆与极限直线按同一
-     尺度重合于 $P$，红色是每轮补上的灯」。圆和直线**共用一个尺度**（每单位弧长/距离取 $0.7$，
+     配图 `fig:onepic` 就是 007-04 那张静图，题注只一句「红色是每轮补上的灯。」，等式不重述。
+     圆和直线**共用一个尺度**（每单位弧长/距离取 $0.7$，
      周长 $2^{k+1}$ 的圆半径 $0.7\cdot2^k/\pi$），这件事只写在 TikZ 注释里，与视频里的
-     `STEP = np.pi * R0` 对应，不在正文和题注里解释。
+     `STEP = np.pi * R0` 对应，不在正文和题注里解释。图里四层圆**各自都要画上本层的灯**：
+     半径 $0.223/0.446/0.891/1.783$（周长 $2/4/8/16$）分别有 $0/2/6/14$ 盏蓝灯加顶端一盏红灯，
+     最里层周长 $2$ 的圆只有正对面那一盏红灯。早先只画了最大一层，小圆是空的。
 8. `07-references.tex` 参考文献：Euler、Wästlund、3Blue1Brown、Apostol 等。
 
 论文与视频的差集（视频已有、论文还没写）：只剩 007-02 那个开放问题——「几何能不能直接交出

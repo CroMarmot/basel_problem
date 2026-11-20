@@ -35,11 +35,13 @@
 把翻倍规则改成：每一轮先把灯按原样映射到大圆上，再在大圆上 $P$ 的正对面补一盏灯。
 这样极限直线上每个非零整数点都亮着灯，它们送到 $P$ 的亮度等于各轮补上的灯的亮度，
 \begin{equation}
-  2S=\sum_{k=0}^{\infty}\frac{\pi^{2}}{4^{k+1}}=\frac{\pi^{2}}{3},
-  \qquad\text{于是}\qquad
-  S=\frac{\pi^{2}}{6}.
+  S=\frac{1}{2}\left(\frac{\pi^{2}}{2^{2}}+\frac{\pi^{2}}{4^{2}}+\frac{\pi^{2}}{8^{2}}+\cdots\right)
+   =\frac{\pi^{2}}{6}.
   \label{eq:direct}
 \end{equation}
+式中的 $\frac12$ 是因为直线在每个距离上点亮两盏灯，$n$ 与 $-n$ 各一盏：图上交出的其实是 $2S$；
+第 $k$ 轮那一项 $\frac{\pi^{2}}{(2^{k+1})^{2}}$ 就是该轮补上的那盏灯的亮度，它到 $P$ 的距离是
+$\frac{2^{k+1}}{\pi}$。
 \end{theorem}
 
 每轮只需补一盏灯，而且它永远落在同一个位置：正对面正是等效替换产生不出来的那一处，
@@ -48,10 +50,15 @@
 等式 \eqref{eq:basel} 与 $\pi^{2}/6$ 早已有很多条到达路线：Kalman 的综述收了六条
 \cite{kalman}，Matsuoka 给出一条初等的 \cite{matsuoka}；与下面这张图气质最接近的，
 是 Dumont 那个启发式论证——Komornik 把它补严，并把 Gregory--Leibniz 级数与巴塞尔级数
-系在一起 \cite{komornik}。就作者能查到的——论文与科普视频都查过——还没有哪张同类的图
-能直接读出完整的级数本身：已有的几何讲法都停在某个子级数，再靠代数收尾。
-本文要改动的都不是这几条路线，只针对 Wästlund 的这一支构造
-\cite{wastlund}。
+系在一起 \cite{komornik}。
+
+这条几何路线在所有能查到的讲法里都是同一个形状：Wästlund 自己的短文 \cite{wastlund}、
+维基百科词条里「Geometric proof」一节 \cite{wikipedia}、3Blue1Brown 的视频
+\cite{threeblueonebrown}，都是把翻倍做到极限、读出奇数整数处那些灯的亮度，
+再靠「偶数项占整体四分之一」这一句把 $S$ 解回来。就作者能查到的，还没有哪张同类的图
+交出的是完整的级数本身：已有的几何讲法都停在某个子级数，再用同样的两句代数收尾，
+而式 \eqref{eq:direct} 省掉的正是这个收尾。本文要改动的都不是这几条路线，
+只针对 Wästlund 的这一支构造 \cite{wastlund}。
 
 第 2 节复述 Wästlund 的证明；第 3 节给出改动与定理 \ref{thm:direct} 的证明，
 那是本文唯一的新内容。
