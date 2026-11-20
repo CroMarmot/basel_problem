@@ -472,7 +472,10 @@ $\Bigr)$ 白色，末段 $=\ \frac{\pi^2}{6}$ 黄色。括号用 `\Bigl(`/`\Bigr
 XeLaTeX + fontspec + Noto CJK，A4，正文按章拆在 `paper/sections/`，由入口
 `paper/basel_problem_paper.tex` 顺序 `\input`；`paper/build.py` 跑两遍并检查字体与
 `Missing character`。成品 `output/basel_problem_paper.pdf`，**目前 7 页**（标题页含摘要、MSC/关键词与目录）。
-标题页署名 YeXiaoRain（独立研究者，四川成都），日期写死 2026 年 11 月 20 日，
+标题页署名 YeXiaoRain（独立研究者，四川成都），日期写死 2026 年 11 月 20 日；
+首页 MSC/关键词块下面一行许可声明（CC BY 4.0），hyperref 的 `pdftitle/pdfauthor/pdfsubject/pdfkeywords`
+四项都填了（`pdfinfo` 可验，仓库里生成的 PDF 元数据曾经全空，Google Scholar 与仓储爬虫优先读这里），
+三版同此。
 摘要末尾一句点出本文自己的贡献在 6.2，正文第 1 节末尾同样声明「本文只有 6.2 是新的」，
 并加一段「更早的初等/几何推导」的说明；文末有 `\section*{致谢}` 感谢 Wästlund 与 3Blue1Brown。
 这一版与视频对齐，三条路线都在，所以 Euler/Ahlfors/Apostol 三条参考文献都有 `\cite` 落到正文里
@@ -510,7 +513,7 @@ Preprints.org 时直接交这份 PDF，不需要平台编译。
 `paper_en/basel_problem_paper_en.tex` + `paper_en/sections/` + `paper_en/build.py`
 （pdflatex 两遍，检查未定义引用与缺字，日志按 `errors="replace"` 解码——`W\"astlund` 会在日志里
 留下 latin-1 的 0xE4 字节），成品 `output/basel_problem_paper_en.pdf`，**目前 6 页 A4**
-（第 6 页整页是参考文献）。
+（第 6 页是 `fig:onepic`、收束段、致谢与参考文献）。
 标题 `The Basel Problem Read off a Single Picture`，
 副题 `One Extra Lamp in Wästlund's Doubling, and a Geometric Series Left to Sum`。
 标题不带显示公式（PDF 文本抽取会把 `\sum` 打散成噪声，检索不到），主标题只放论断、
